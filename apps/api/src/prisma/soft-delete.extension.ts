@@ -13,6 +13,11 @@ export const createSoftDeleteExtension = (...models: Prisma.ModelName[]) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
           return (Prisma.getExtensionContext(this) as any).update({
             ...args,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            where: {
+              ...args.where,
+              deletedAt: { not: null },
+            },
             data: { deletedAt: null },
           });
         },
@@ -23,11 +28,6 @@ export const createSoftDeleteExtension = (...models: Prisma.ModelName[]) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
           return (Prisma.getExtensionContext(this) as any).update({
             ...args,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            where: {
-              ...args.where,
-              deletedAt: null,
-            },
             data: { deletedAt: new Date() },
           });
         },
@@ -41,11 +41,6 @@ export const createSoftDeleteExtension = (...models: Prisma.ModelName[]) => {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
           return (Prisma.getExtensionContext(this) as any).updateMany({
             ...args,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            where: {
-              ...args.where,
-              deletedAt: null,
-            },
             data: { deletedAt: new Date() },
           });
         },

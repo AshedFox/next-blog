@@ -1,4 +1,5 @@
 import { UserRole, UserStatus } from '@prisma/client';
+import { Exclude } from 'class-transformer';
 
 export class UserDto {
   id!: string;
@@ -10,4 +11,7 @@ export class UserDto {
   createdAt!: Date;
   updatedAt!: Date;
   deletedAt!: Date | null;
+
+  @Exclude()
+  passwordHash!: string;
 }

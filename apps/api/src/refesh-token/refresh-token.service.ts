@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { RefreshToken } from '@prisma/client';
 import { randomBytes } from 'crypto';
 import ms, { StringValue } from 'ms';
@@ -12,6 +13,7 @@ import { CreateRefreshTokenDto } from './dto/create-refresh-token.dto';
 @Injectable()
 export class RefreshTokenService {
   private refreshTokenLifetime: number;
+  private readonly logger = new Logger(RefreshTokenService.name);
 
   constructor(
     private readonly prisma: PrismaService,
@@ -96,5 +98,27 @@ export class RefreshTokenService {
     }
 
     return this.prisma.refreshToken.delete({ where: { tokenHash } });
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async clearExpired() {
+    this.logger.log('Clearing expired refresh tokens...');
+
+    const { count } = await this.prisma.refreshToken.deleteMany({
+      where: { expiresAt: { lte: new Date() }, revokedAt: null },
+    });
+
+    this.logger.log(`Cleared ${count} expired refresh tokens`);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async clearRevoked() {
+    this.logger.log('Clearing revoked refresh tokens...');
+
+    const { count } = await this.prisma.refreshToken.deleteMany({
+      where: { revokedAt: { not: null } },
+    });
+
+    this.logger.log(`Cleared ${count} revoked refresh tokens`);
   }
 }

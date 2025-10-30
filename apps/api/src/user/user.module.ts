@@ -5,11 +5,12 @@ import { UsernameGeneratorModule } from '@/username-generator/username-generator
 
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { UserCacheService } from './user-cache.service';
 
 @Module({
   imports: [UsernameGeneratorModule, HashModule],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, UserCacheService],
   exports: [UserService],
 })
 export class UserModule {}

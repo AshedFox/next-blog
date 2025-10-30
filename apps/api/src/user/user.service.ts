@@ -12,13 +12,15 @@ import { UsernameGeneratorService } from '@/username-generator/username-generato
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserCacheService } from './user-cache.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly usernameGenerator: UsernameGeneratorService,
-    private readonly hashService: HashService
+    private readonly hashService: HashService,
+    private readonly cache: UserCacheService
   ) {}
 
   async create({ password, ...input }: CreateUserDto): Promise<User> {
@@ -69,11 +71,29 @@ export class UserService {
     );
   }
 
-  async findOneById(id: string): Promise<User | null> {
+  async findOneById(
+    id: string,
+    useCache: boolean = true
+  ): Promise<User | null> {
+    if (useCache) {
+      const cached = await this.cache.get(id);
+
+      if (cached) {
+        return cached;
+      }
+    }
+
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  async getOneById(id: string): Promise<User> {
+  async getOneById(id: string, useCache: boolean = true): Promise<User> {
+    if (useCache) {
+      const cached = await this.cache.get(id);
+
+      if (cached) {
+        return cached;
+      }
+    }
     const user = await this.prisma.user.findUnique({ where: { id } });
 
     if (!user) {
@@ -112,17 +132,25 @@ export class UserService {
   }
 
   async update(id: string, input: UpdateUserDto): Promise<User> {
-    await this.getOneById(id);
+    await this.getOneById(id, false);
 
-    return this.prisma.user.update({ where: { id }, data: input });
+    const user = await this.prisma.user.update({ where: { id }, data: input });
+
+    await this.cache.invalidate(id);
+
+    return user;
   }
 
   async softDelete(id: string): Promise<User> {
-    await this.getOneById(id);
+    await this.getOneById(id, false);
 
-    return this.prisma.user.softDelete({
+    const user = await this.prisma.user.softDelete({
       where: { id },
     });
+
+    await this.cache.invalidate(id);
+
+    return user;
   }
 
   async restore(id: string): Promise<User> {
@@ -134,6 +162,10 @@ export class UserService {
       throw new NotFoundException('User not found!');
     }
 
-    return this.prisma.user.restore({ where: { id } });
+    const restored = await this.prisma.user.restore({ where: { id } });
+
+    await this.cache.invalidate(id);
+
+    return restored;
   }
 }

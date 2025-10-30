@@ -9,8 +9,10 @@ import {
   Post,
   SerializeOptions,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
+import { MinRole } from '@/auth/decorators/min-role.decorator';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
@@ -49,6 +51,7 @@ export class UserController {
     return this.userService.getOneById(id);
   }
 
+  @MinRole(UserRole.ADMIN)
   @Patch(':id')
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -57,11 +60,13 @@ export class UserController {
     return this.userService.update(id, updateUserDto);
   }
 
+  @MinRole(UserRole.ADMIN)
   @Post(':id/restore')
   restore(@Param('id', ParseUUIDPipe) id: string): Promise<UserDto> {
     return this.userService.restore(id);
   }
 
+  @MinRole(UserRole.ADMIN)
   @Delete(':id')
   delete(@Param('id', ParseUUIDPipe) id: string): Promise<UserDto> {
     return this.userService.softDelete(id);

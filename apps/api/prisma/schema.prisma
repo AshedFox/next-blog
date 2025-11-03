@@ -28,6 +28,7 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   deletedAt     DateTime?
+  articles      Article[]
   refreshTokens RefreshToken[]
 }
 
@@ -45,4 +46,23 @@ model RefreshToken {
   @@index([expiresAt])
   @@index([userId])
   @@index([userId, revokedAt])
+}
+
+enum ArticleStatus {
+  DRAFT
+  IN_REVIEW
+  REJECTED
+  PUBLISHED
+}
+
+model Article {
+  id         String         @id @default(uuid()) @db.Uuid
+  title      String         @db.VarChar(127)
+  content    Json           @db.JsonB
+  status     ArticleStatus  @default(DRAFT)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  deletedAt  DateTime?
+  authorId   String         @db.Uuid
+  author     User           @relation(fields: [authorId], references: [id])
 }

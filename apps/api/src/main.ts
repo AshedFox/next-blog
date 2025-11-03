@@ -1,11 +1,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import cookieParser from 'cookie-parser';
 
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: {
       origin: process.env.APP_FRONTEND_URL || 'http://localhost:3000',
       credentials: true,
@@ -14,6 +15,7 @@ async function bootstrap() {
       exposedHeaders: 'Content-Length, Content-Range',
     },
   });
+  app.set('query parser', 'extended');
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({

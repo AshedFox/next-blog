@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   SerializeOptions,
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
@@ -16,6 +17,7 @@ import { MinRole } from '@/auth/decorators/min-role.decorator';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
+import { UserGetOneDto } from './dto/user-get-one.dto';
 import { UserService } from './user.service';
 
 @SerializeOptions({ type: UserDto })
@@ -24,8 +26,11 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('me')
-  getMe(@CurrentUser('id') userId: string): Promise<UserDto> {
-    return this.userService.getOneById(userId);
+  getMe(
+    @CurrentUser('id') userId: string,
+    @Query() query: UserGetOneDto
+  ): Promise<UserDto> {
+    return this.userService.getOneById(userId, undefined, query.include);
   }
 
   @Patch('me')
@@ -47,8 +52,11 @@ export class UserController {
   }
 
   @Get(':id')
-  getOne(@Param('id', ParseUUIDPipe) id: string): Promise<UserDto> {
-    return this.userService.getOneById(id);
+  getOne(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query() query: UserGetOneDto
+  ): Promise<UserDto> {
+    return this.userService.getOneById(id, undefined, query.include);
   }
 
   @MinRole(UserRole.ADMIN)

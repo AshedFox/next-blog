@@ -73,7 +73,8 @@ export class UserService {
 
   async findOneById(
     id: string,
-    useCache: boolean = true
+    useCache: boolean = true,
+    include: (keyof Prisma.UserInclude)[] = []
   ): Promise<User | null> {
     if (useCache) {
       const cached = await this.cache.get(id);
@@ -83,18 +84,24 @@ export class UserService {
       }
     }
 
-    return this.prisma.user.findUnique({ where: { id } });
+    return this.prisma.user.findUnique({
+      where: { id },
+      include:
+        include.length > 0
+          ? include.reduce((acc, item) => {
+              acc[item] = true;
+              return acc;
+            }, {} as Prisma.UserInclude)
+          : undefined,
+    });
   }
 
-  async getOneById(id: string, useCache: boolean = true): Promise<User> {
-    if (useCache) {
-      const cached = await this.cache.get(id);
-
-      if (cached) {
-        return cached;
-      }
-    }
-    const user = await this.prisma.user.findUnique({ where: { id } });
+  async getOneById(
+    id: string,
+    useCache: boolean = true,
+    include: (keyof Prisma.UserInclude)[] = []
+  ): Promise<User> {
+    const user = await this.findOneById(id, useCache, include);
 
     if (!user) {
       throw new NotFoundException('User not found!');

@@ -111,18 +111,30 @@ export class ArticleService {
 
   async findOne(
     id: string,
-    mode: DeletedMode = 'exclude'
+    mode: DeletedMode = 'exclude',
+    include: (keyof Prisma.ArticleInclude)[] = []
   ): Promise<Article | null> {
     return this.prisma.article.findUnique({
       where: {
         id,
         deletedAt: getDeletedFilter(mode),
       },
+      include:
+        include.length > 0
+          ? include.reduce((acc, item) => {
+              acc[item] = true;
+              return acc;
+            }, {} as Prisma.ArticleInclude)
+          : undefined,
     });
   }
 
-  async getOne(id: string, mode: DeletedMode = 'exclude'): Promise<Article> {
-    const article = await this.findOne(id, mode);
+  async getOne(
+    id: string,
+    mode: DeletedMode = 'exclude',
+    include: (keyof Prisma.ArticleInclude)[] = []
+  ): Promise<Article> {
+    const article = await this.findOne(id, mode, include);
 
     if (!article) {
       throw new NotFoundException('Article not found!');

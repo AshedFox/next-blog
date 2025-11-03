@@ -20,6 +20,7 @@ import { DeletedMode } from '@/common/soft-delete/deleted-filter';
 
 import { ArticleService } from './article.service';
 import { ArticleDto } from './dto/article.dto';
+import { ArticleGetOneDto } from './dto/article-get-one.dto';
 import { ArticleSearchDto } from './dto/article-search.dto';
 import { ArticleSearchResponseDto } from './dto/article-search-response.dto';
 import { CreateArticleDto } from './dto/create-article.dto';
@@ -44,8 +45,13 @@ export class ArticleController {
 
   @Public()
   @Get(':id')
-  async getOne(@Param('id') id: string): Promise<ArticleDto> {
-    return new ArticleDto(await this.articleService.getOne(id));
+  async getOne(
+    @Param('id') id: string,
+    @Query() query: ArticleGetOneDto
+  ): Promise<ArticleDto> {
+    return new ArticleDto(
+      await this.articleService.getOne(id, undefined, query.include)
+    );
   }
 
   @Public()

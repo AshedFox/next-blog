@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class HashService {
@@ -14,5 +15,9 @@ export class HashService {
 
   async verify(digest: string, password: string): Promise<boolean> {
     return argon2.verify(digest, password);
+  }
+
+  hashHMAC(token: string, secret: string) {
+    return crypto.createHmac('sha256', secret).update(token).digest('hex');
   }
 }

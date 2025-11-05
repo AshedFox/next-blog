@@ -13,15 +13,19 @@ import { CreateRefreshTokenDto } from './dto/create-refresh-token.dto';
 @Injectable()
 export class RefreshTokenService {
   private refreshTokenLifetime: number;
+  private refreshTokenSecret: string;
   private readonly logger = new Logger(RefreshTokenService.name);
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly hashService: HashService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
+    private readonly hashService: HashService
   ) {
     this.refreshTokenLifetime = ms(
       this.configService.getOrThrow<StringValue>('REFRESH_TOKEN_LIFETIME')
+    );
+    this.refreshTokenSecret = this.configService.getOrThrow<string>(
+      'REFRESH_TOKEN_SECRET'
     );
   }
 
@@ -33,7 +37,7 @@ export class RefreshTokenService {
       await this.prisma.refreshToken.create({
         data: {
           ...input,
-          tokenHash: await this.hashService.hash(token),
+          tokenHash: this.hashService.hashHMAC(token, this.refreshTokenSecret),
           expiresAt: new Date(Date.now() + this.refreshTokenLifetime),
         },
       }),
@@ -42,7 +46,10 @@ export class RefreshTokenService {
 
   async getOneByToken(token: string): Promise<RefreshToken> {
     const refeshToken = await this.prisma.refreshToken.findUnique({
-      where: { tokenHash: await this.hashService.hash(token), revokedAt: null },
+      where: {
+        tokenHash: this.hashService.hashHMAC(token, this.refreshTokenSecret),
+        revokedAt: null,
+      },
     });
 
     if (!refeshToken) {
@@ -63,7 +70,7 @@ export class RefreshTokenService {
   }
 
   async revokeByToken(token: string): Promise<RefreshToken> {
-    const tokenHash = await this.hashService.hash(token);
+    const tokenHash = this.hashService.hashHMAC(token, this.refreshTokenSecret);
     const refreshToken = await this.prisma.refreshToken.findUnique({
       where: { tokenHash, revokedAt: null },
     });
@@ -88,7 +95,7 @@ export class RefreshTokenService {
   }
 
   async deleteByToken(token: string): Promise<RefreshToken> {
-    const tokenHash = await this.hashService.hash(token);
+    const tokenHash = this.hashService.hashHMAC(token, this.refreshTokenSecret);
     const refreshToken = await this.prisma.refreshToken.findUnique({
       where: { tokenHash },
     });

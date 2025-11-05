@@ -8,8 +8,8 @@ import { RefreshTokenService } from '@/refesh-token/refresh-token.service';
 import { UserService } from '@/user/user.service';
 
 import { HashService } from '../hash/hash.service';
-import { AuthResult } from './auth.types';
 import { AuthMetadataDto } from './dto/auth-metadata.dto';
+import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 
@@ -24,15 +24,15 @@ export class AuthService {
     private readonly hashService: HashService,
     private readonly refreshTokenService: RefreshTokenService
   ) {
-    this.accessTokenExpiresIn =
-      ms(this.configService.getOrThrow<StringValue>('ACCESS_TOKEN_LIFETIME')) /
-      1000;
+    this.accessTokenExpiresIn = ms(
+      this.configService.getOrThrow<StringValue>('ACCESS_TOKEN_LIFETIME')
+    );
   }
 
   async signUp(
     { email, password }: SignUpDto,
     metadata?: AuthMetadataDto
-  ): Promise<AuthResult> {
+  ): Promise<AuthResponseDto> {
     return this.makeAuthResult(
       await this.userService.create({ email, password }),
       metadata
@@ -42,7 +42,7 @@ export class AuthService {
   async login(
     { email, password }: LoginDto,
     metadata?: AuthMetadataDto
-  ): Promise<AuthResult> {
+  ): Promise<AuthResponseDto> {
     try {
       const user = await this.userService.getOneByEmail(email);
       const passwordMatches = await this.hashService.verify(
@@ -63,20 +63,22 @@ export class AuthService {
   async makeAuthResult(
     user: User,
     metadata?: AuthMetadataDto
-  ): Promise<AuthResult> {
-    const [accessToken, [refreshToken]] = await Promise.all([
-      this.generateAccessToken(user.id),
-      this.refreshTokenService.create({
-        ...metadata,
-        userId: user.id,
-      }),
-    ]);
+  ): Promise<AuthResponseDto> {
+    const [accessToken, [refreshToken, { expiresAt: refreshTokenExpiresAt }]] =
+      await Promise.all([
+        this.generateAccessToken(user.id),
+        this.refreshTokenService.create({
+          ...metadata,
+          userId: user.id,
+        }),
+      ]);
 
     return {
       tokenType: 'Bearer',
-      expiresIn: this.accessTokenExpiresIn,
+      accessTokenExpiresAt: new Date(Date.now() + this.accessTokenExpiresIn),
       accessToken,
       refreshToken,
+      refreshTokenExpiresAt,
       user,
     };
   }
@@ -85,18 +87,19 @@ export class AuthService {
     return this.jwtService.signAsync({ sub: userId });
   }
 
-  async refresh(oldRefreshToken: string): Promise<AuthResult> {
+  async refresh(oldRefreshToken: string): Promise<AuthResponseDto> {
     try {
-      const [refreshToken, { userId }] =
+      const [refreshToken, { userId, expiresAt: refreshTokenExpiresAt }] =
         await this.refreshTokenService.rotate(oldRefreshToken);
       const accessToken = await this.generateAccessToken(userId);
       const user = await this.userService.getOneById(userId);
 
       return {
         tokenType: 'Bearer',
-        expiresIn: this.accessTokenExpiresIn,
+        accessTokenExpiresAt: new Date(Date.now() + this.accessTokenExpiresIn),
         accessToken,
         refreshToken,
+        refreshTokenExpiresAt,
         user,
       };
     } catch {

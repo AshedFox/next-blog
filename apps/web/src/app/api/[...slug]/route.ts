@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import {
+  authServerApi,
+  checkAccessToken,
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+  setRefreshToken,
+} from '@/features/auth/server';
+import { AuthResult } from '@/features/auth/types';
 import { clientEnv } from '@/lib/env/client';
 
 type Context = {
@@ -10,6 +19,29 @@ async function proxyRequest(
   request: NextRequest,
   slug: string[]
 ): Promise<NextResponse> {
+  const accessToken = await getAccessToken(request.cookies);
+  const refreshToken = await getRefreshToken(request.cookies);
+
+  let tokenToUse = accessToken;
+  let refreshResult: AuthResult | null = null;
+
+  const { isValid, needsRefresh } = accessToken
+    ? checkAccessToken(accessToken)
+    : {};
+
+  if ((!accessToken || !isValid || needsRefresh) && refreshToken) {
+    const { data } = await authServerApi.refresh(refreshToken);
+
+    if (data) {
+      refreshResult = data;
+      tokenToUse = data.accessToken;
+    } else {
+      tokenToUse = undefined;
+    }
+  } else {
+    tokenToUse = undefined;
+  }
+
   const backendUrl = new URL(
     `/${slug.join('/')}`,
     clientEnv.NEXT_PUBLIC_BACKEND_URL
@@ -30,6 +62,10 @@ async function proxyRequest(
       headers.set(key, value);
     }
   });
+
+  if (tokenToUse) {
+    headers.set('Authorization', `Bearer ${tokenToUse}`);
+  }
 
   const clientIp = request.headers.get('x-forwarded-for');
 
@@ -87,6 +123,19 @@ async function proxyRequest(
       statusText: backendResponse.statusText,
       headers: responseHeaders,
     });
+
+    if (refreshResult) {
+      setAccessToken(
+        response.cookies,
+        refreshResult.accessToken,
+        new Date(refreshResult.accessTokenExpiresAt)
+      );
+      setRefreshToken(
+        response.cookies,
+        refreshResult.refreshToken,
+        new Date(refreshResult.refreshTokenExpiresAt)
+      );
+    }
 
     return response;
   } catch (error) {

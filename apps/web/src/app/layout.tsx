@@ -3,7 +3,7 @@ import '@workspace/ui/globals.css';
 import { Metadata } from 'next';
 import { JetBrains_Mono, Lora, Manrope, Roboto } from 'next/font/google';
 
-import { Providers } from '@/components/Providers';
+import { Providers } from '@/shared/components/Providers';
 
 const fontHeading = Manrope({
   subsets: ['latin'],

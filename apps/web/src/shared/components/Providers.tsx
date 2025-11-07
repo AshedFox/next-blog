@@ -8,6 +8,7 @@ import { getQueryClient } from '@/lib/query-client';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
+
   return (
     <NextThemesProvider
       attribute="class"

@@ -72,3 +72,10 @@ export class QuoteBlockDto {
   @Length(1, 127)
   author?: string;
 }
+
+export type ArticleBlockDto =
+  | ParagraphBlockDto
+  | ImageBlockDto
+  | VideoBlockDto
+  | CodeBlockDto
+  | QuoteBlockDto;

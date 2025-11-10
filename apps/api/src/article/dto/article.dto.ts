@@ -1,9 +1,18 @@
-import { Article, ArticleStatus } from '@prisma/client';
-import { plainToInstance, Transform, Type } from 'class-transformer';
+import { ArticleStatus } from '@prisma/client';
+import { Type } from 'class-transformer';
+import { ArrayNotEmpty, ValidateNested } from 'class-validator';
 
 import { UserDto } from '@/user/dto/user.dto';
 
-import { ArticleContentDto } from './article-content.dto';
+import {
+  ArticleBlockDto,
+  ArticleBlockType,
+  CodeBlockDto,
+  ImageBlockDto,
+  ParagraphBlockDto,
+  QuoteBlockDto,
+  VideoBlockDto,
+} from './article-block.dto';
 
 export class ArticleDto {
   id!: string;
@@ -14,8 +23,22 @@ export class ArticleDto {
   authorId!: string;
   deletedAt?: Date;
 
-  @Transform(({ value }) => plainToInstance(ArticleContentDto, value))
-  content!: ArticleContentDto;
+  @ValidateNested({ each: true })
+  @Type(() => Object, {
+    discriminator: {
+      property: 'type',
+      subTypes: [
+        { value: ParagraphBlockDto, name: ArticleBlockType.PARAGRAPH },
+        { value: ImageBlockDto, name: ArticleBlockType.IMAGE },
+        { value: VideoBlockDto, name: ArticleBlockType.VIDEO },
+        { value: CodeBlockDto, name: ArticleBlockType.CODE },
+        { value: QuoteBlockDto, name: ArticleBlockType.QUOTE },
+      ],
+    },
+    keepDiscriminatorProperty: true,
+  })
+  @ArrayNotEmpty()
+  blocks!: ArticleBlockDto[];
 
   @Type(() => UserDto)
   author?: UserDto;

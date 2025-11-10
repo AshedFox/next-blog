@@ -1,6 +1,13 @@
-import { Equals, IsOptional, IsString, IsUrl, Length } from 'class-validator';
+import {
+  Equals,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Length,
+} from 'class-validator';
 
-import { ArticleBlockType } from '../article.types';
+import { ArticleBlockType, VideoProvider } from '../article.types';
 
 export class ParagraphBlockDto {
   @Equals(ArticleBlockType.PARAGRAPH)
@@ -32,8 +39,15 @@ export class VideoBlockDto {
   @Equals(ArticleBlockType.VIDEO)
   type!: typeof ArticleBlockType.VIDEO;
 
+  @IsEnum(VideoProvider)
+  provider!: VideoProvider;
+
+  @IsString()
+  @Length(1, 127)
+  videoId!: string;
+
   @IsUrl()
-  url!: string;
+  embedUrl!: string;
 }
 
 export class CodeBlockDto {

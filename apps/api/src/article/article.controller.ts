@@ -18,6 +18,7 @@ import { Public } from '@/auth/decorators/public.decorator';
 import { PaginationType } from '@/common/search/types/pagination.types';
 import { DeletedMode } from '@/common/soft-delete/deleted-filter';
 
+import { ArticleSerializer } from './article.serializer';
 import { ArticleService } from './article.service';
 import { ArticleDto } from './dto/article.dto';
 import { ArticleGetOneDto } from './dto/article-get-one.dto';
@@ -28,14 +29,17 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Controller('articles')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(
+    private readonly articleService: ArticleService,
+    private readonly articleSerializer: ArticleSerializer
+  ) {}
 
   @Post()
   async create(
     @Body() createArticleDto: CreateArticleDto,
     @CurrentUser('id') userId: string
   ): Promise<ArticleDto> {
-    return new ArticleDto(
+    return this.articleSerializer.serialize(
       await this.articleService.create({
         ...createArticleDto,
         authorId: userId,
@@ -49,7 +53,7 @@ export class ArticleController {
     @Param('id') id: string,
     @Query() query: ArticleGetOneDto
   ): Promise<ArticleDto> {
-    return new ArticleDto(
+    return this.articleSerializer.serialize(
       await this.articleService.getOne(id, undefined, query.include)
     );
   }
@@ -68,7 +72,7 @@ export class ArticleController {
       return {
         data: data
           .slice(0, pagination.limit)
-          .map((article) => new ArticleDto(article)),
+          .map((article) => this.articleSerializer.serialize(article)),
         meta: {
           limit: pagination.limit,
           nextCursor: hasNextPage ? data[data.length - 1]!.id : undefined,
@@ -81,7 +85,7 @@ export class ArticleController {
     const totalPages = Math.ceil(count / pagination.limit);
 
     return {
-      data: data.map((article) => new ArticleDto(article)),
+      data: data.map((article) => this.articleSerializer.serialize(article)),
       meta: {
         limit: pagination.limit,
         totalCount: count,
@@ -99,7 +103,7 @@ export class ArticleController {
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto
   ): Promise<ArticleDto> {
-    return new ArticleDto(
+    return this.articleSerializer.serialize(
       await this.articleService.update(id, updateArticleDto)
     );
   }
@@ -118,7 +122,9 @@ export class ArticleController {
       );
     }
 
-    return new ArticleDto(await this.articleService.restore(id));
+    return this.articleSerializer.serialize(
+      await this.articleService.restore(id)
+    );
   }
 
   @HttpCode(200)
@@ -135,7 +141,7 @@ export class ArticleController {
       );
     }
 
-    return new ArticleDto(
+    return this.articleSerializer.serialize(
       await this.articleService.changeStatus(id, ArticleStatus.IN_REVIEW)
     );
   }
@@ -144,7 +150,7 @@ export class ArticleController {
   @MinRole(UserRole.ADMIN)
   @Post(':id/approve')
   async approve(@Param('id') id: string): Promise<ArticleDto> {
-    return new ArticleDto(
+    return this.articleSerializer.serialize(
       await this.articleService.changeStatus(id, ArticleStatus.PUBLISHED)
     );
   }
@@ -153,7 +159,7 @@ export class ArticleController {
   @MinRole(UserRole.ADMIN)
   @Post(':id/reject')
   async reject(@Param('id') id: string): Promise<ArticleDto> {
-    return new ArticleDto(
+    return this.articleSerializer.serialize(
       await this.articleService.changeStatus(id, ArticleStatus.REJECTED)
     );
   }
@@ -171,6 +177,8 @@ export class ArticleController {
       );
     }
 
-    return new ArticleDto(await this.articleService.softDelete(id));
+    return this.articleSerializer.serialize(
+      await this.articleService.softDelete(id)
+    );
   }
 }

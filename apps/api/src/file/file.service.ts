@@ -45,6 +45,18 @@ export class FileService {
     return file;
   }
 
+  async findMany(
+    ids: string[],
+    mode: DeletedMode = 'exclude'
+  ): Promise<File[]> {
+    return this.prisma.file.findMany({
+      where: {
+        id: { in: ids },
+        deletedAt: getDeletedFilter(mode),
+      },
+    });
+  }
+
   async initUpload(data: InitUploadDto) {
     const id = randomUUID();
     const uploadUrl = await this.storageService.getUploadUrl(id, data.mimetype);

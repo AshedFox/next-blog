@@ -1,15 +1,14 @@
-import { Equals, IsOptional, IsString, IsUrl, Length } from 'class-validator';
+import {
+  Equals,
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  Length,
+} from 'class-validator';
 
-export const ArticleBlockType = {
-  PARAGRAPH: 'PARAGRAPH',
-  IMAGE: 'IMAGE',
-  VIDEO: 'VIDEO',
-  CODE: 'CODE',
-  QUOTE: 'QUOTE',
-} as const;
-
-export type ArticleBlockType =
-  (typeof ArticleBlockType)[keyof typeof ArticleBlockType];
+import { ArticleBlockType, VideoProvider } from '../article.types';
 
 export class ParagraphBlockDto {
   @Equals(ArticleBlockType.PARAGRAPH)
@@ -31,6 +30,9 @@ export class ImageBlockDto {
   @IsUrl()
   url!: string;
 
+  @IsUUID()
+  fileId!: string;
+
   @IsOptional()
   @IsString()
   @Length(1, 127)
@@ -41,8 +43,15 @@ export class VideoBlockDto {
   @Equals(ArticleBlockType.VIDEO)
   type!: typeof ArticleBlockType.VIDEO;
 
+  @IsEnum(VideoProvider)
+  provider!: VideoProvider;
+
+  @IsString()
+  @Length(1, 127)
+  videoId!: string;
+
   @IsUrl()
-  url!: string;
+  embedUrl!: string;
 }
 
 export class CodeBlockDto {

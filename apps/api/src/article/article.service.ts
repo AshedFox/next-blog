@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Article, ArticleStatus, Prisma } from '@prisma/client';
 
 import {
@@ -7,18 +11,61 @@ import {
   ParsedFilters,
 } from '@/common/search';
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
+import { FileService } from '@/file/file.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
-import { CreateArticleInput } from './article.types';
+import { ArticleBlockType, CreateArticleInput } from './article.types';
 import { ARTICLE_SEARCH_CONFIG } from './article-search.config';
+import { ArticleBlockDto } from './dto/article-block.dto';
 import { ArticleSearchDto } from './dto/article-search.dto';
+import {
+  CreateArticleBlockDto,
+  CreateImageBlockDto,
+} from './dto/create-article-block.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
 export class ArticleService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fileService: FileService
+  ) {}
 
-  create(input: CreateArticleInput): Promise<Article> {
+  private async validateImageBlocks(blocks: CreateImageBlockDto[]) {
+    if (blocks.length === 0) {
+      return;
+    }
+
+    const ids = blocks.map((b) => b.fileId);
+
+    const existingFiles = await this.fileService.findMany(ids);
+
+    const existingIds = new Set(existingFiles.map((f) => f.id));
+
+    const missing: { blockIndex: number; fileId: string }[] = [];
+
+    blocks.forEach((block, index) => {
+      if (block.type !== ArticleBlockType.IMAGE) {
+        return;
+      }
+
+      if (!existingIds.has(block.fileId)) {
+        missing.push({ blockIndex: index, fileId: block.fileId });
+      }
+    });
+
+    if (missing.length > 0) {
+      throw new BadRequestException(
+        missing.map((m) => `blocks.${m.blockIndex}.fileId file does not exist`)
+      );
+    }
+  }
+
+  async create(input: CreateArticleInput): Promise<Article> {
+    await this.validateImageBlocks(
+      input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
+    );
+
     return this.prisma.article.create({
       data: {
         ...input,
@@ -147,9 +194,15 @@ export class ArticleService {
   }
 
   async update(id: string, input: UpdateArticleDto): Promise<Article> {
-    await this.getOne(id);
+    const article = await this.getOne(id);
 
-    return this.prisma.article.update({
+    if (input.blocks) {
+      await this.validateImageBlocks(
+        input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
+      );
+    }
+
+    const updated = await this.prisma.article.update({
       where: { id },
       data: {
         ...input,
@@ -158,6 +211,17 @@ export class ArticleService {
           : undefined,
       },
     });
+
+    if (input.blocks) {
+      await this.fileService.markManyAsDeleted(
+        this.getRemovedImagesIds(
+          article.blocks as unknown as ArticleBlockDto[],
+          input.blocks
+        )
+      );
+    }
+
+    return updated;
   }
 
   async restore(id: string): Promise<Article> {
@@ -181,5 +245,30 @@ export class ArticleService {
     return this.prisma.article.softDelete({
       where: { id },
     });
+  }
+
+  private getRemovedImagesIds(
+    oldBlocks: ArticleBlockDto[],
+    newBlocks: CreateArticleBlockDto[]
+  ): string[] {
+    const oldImagesIds = new Set<string>();
+
+    for (const block of oldBlocks) {
+      if (block.type === ArticleBlockType.IMAGE) {
+        oldImagesIds.add(block.fileId);
+      }
+    }
+
+    if (oldImagesIds.size === 0) {
+      return [];
+    }
+
+    for (const block of newBlocks) {
+      if (block.type === ArticleBlockType.IMAGE) {
+        oldImagesIds.delete(block.fileId);
+      }
+    }
+
+    return Array.from(oldImagesIds);
   }
 }

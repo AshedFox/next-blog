@@ -21,7 +21,7 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 export class ArticleService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly fileSerivce: FileService
+    private readonly fileService: FileService
   ) {}
 
   create(input: CreateArticleInput): Promise<Article> {
@@ -166,7 +166,7 @@ export class ArticleService {
     });
 
     if (input.blocks) {
-      await this.fileSerivce.markManyAsDeleted(
+      await this.fileService.markManyAsDeleted(
         this.getRemovedImagesIds(
           article.blocks as unknown as ArticleBlockDto[],
           input.blocks

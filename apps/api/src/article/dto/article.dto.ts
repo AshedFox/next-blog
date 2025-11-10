@@ -4,9 +4,9 @@ import { ArrayNotEmpty, ValidateNested } from 'class-validator';
 
 import { UserDto } from '@/user/dto/user.dto';
 
+import { ArticleBlockType } from '../article.types';
 import {
   ArticleBlockDto,
-  ArticleBlockType,
   CodeBlockDto,
   ImageBlockDto,
   ParagraphBlockDto,

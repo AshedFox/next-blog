@@ -1,15 +1,6 @@
 import { Equals, IsOptional, IsString, IsUrl, Length } from 'class-validator';
 
-export const ArticleBlockType = {
-  PARAGRAPH: 'PARAGRAPH',
-  IMAGE: 'IMAGE',
-  VIDEO: 'VIDEO',
-  CODE: 'CODE',
-  QUOTE: 'QUOTE',
-} as const;
-
-export type ArticleBlockType =
-  (typeof ArticleBlockType)[keyof typeof ArticleBlockType];
+import { ArticleBlockType } from '../article.types';
 
 export class ParagraphBlockDto {
   @Equals(ArticleBlockType.PARAGRAPH)

@@ -25,8 +25,6 @@ export class PrismaProvider
   }
 
   withExtensions() {
-    return this.$extends(
-      createSoftDeleteExtension('User', 'Article', 'Comment')
-    );
+    return this.$extends(createSoftDeleteExtension('User', 'Article', 'File'));
   }
 }

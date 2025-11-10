@@ -42,8 +42,4 @@ export class ArticleDto {
 
   @Type(() => UserDto)
   author?: UserDto;
-
-  constructor(article: Article) {
-    Object.assign(this, article);
-  }
 }

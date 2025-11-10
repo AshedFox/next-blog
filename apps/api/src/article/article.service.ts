@@ -7,16 +7,22 @@ import {
   ParsedFilters,
 } from '@/common/search';
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
+import { FileService } from '@/file/file.service';
 import { PrismaService } from '@/prisma/prisma.service';
 
-import { CreateArticleInput } from './article.types';
+import { ArticleBlockType, CreateArticleInput } from './article.types';
 import { ARTICLE_SEARCH_CONFIG } from './article-search.config';
+import { ArticleBlockDto } from './dto/article-block.dto';
 import { ArticleSearchDto } from './dto/article-search.dto';
+import { CreateArticleBlockDto } from './dto/create-article-block.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
 export class ArticleService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fileSerivce: FileService
+  ) {}
 
   create(input: CreateArticleInput): Promise<Article> {
     return this.prisma.article.create({
@@ -147,9 +153,9 @@ export class ArticleService {
   }
 
   async update(id: string, input: UpdateArticleDto): Promise<Article> {
-    await this.getOne(id);
+    const article = await this.getOne(id);
 
-    return this.prisma.article.update({
+    const updated = await this.prisma.article.update({
       where: { id },
       data: {
         ...input,
@@ -158,6 +164,17 @@ export class ArticleService {
           : undefined,
       },
     });
+
+    if (input.blocks) {
+      await this.fileSerivce.markManyAsDeleted(
+        this.getRemovedImagesIds(
+          article.blocks as unknown as ArticleBlockDto[],
+          input.blocks
+        )
+      );
+    }
+
+    return updated;
   }
 
   async restore(id: string): Promise<Article> {
@@ -181,5 +198,32 @@ export class ArticleService {
     return this.prisma.article.softDelete({
       where: { id },
     });
+  }
+
+  private getRemovedImagesIds(
+    oldBlocks: ArticleBlockDto[],
+    newBlocks: CreateArticleBlockDto[]
+  ): string[] {
+    const oldImagesIds = new Set<string>();
+
+    for (const block of oldBlocks) {
+      if (block.type === ArticleBlockType.IMAGE) {
+        oldImagesIds.add(block.fileId);
+      }
+    }
+
+    if (oldImagesIds.size === 0) {
+      return [];
+    }
+
+    for (const block of newBlocks) {
+      if (block.type === ArticleBlockType.IMAGE) {
+        oldImagesIds.delete(block.fileId);
+      }
+    }
+
+    console.log(oldImagesIds);
+
+    return Array.from(oldImagesIds);
   }
 }

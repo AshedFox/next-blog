@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Article, ArticleStatus, Prisma } from '@prisma/client';
 
 import {
@@ -14,7 +18,10 @@ import { ArticleBlockType, CreateArticleInput } from './article.types';
 import { ARTICLE_SEARCH_CONFIG } from './article-search.config';
 import { ArticleBlockDto } from './dto/article-block.dto';
 import { ArticleSearchDto } from './dto/article-search.dto';
-import { CreateArticleBlockDto } from './dto/create-article-block.dto';
+import {
+  CreateArticleBlockDto,
+  CreateImageBlockDto,
+} from './dto/create-article-block.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
@@ -24,7 +31,41 @@ export class ArticleService {
     private readonly fileService: FileService
   ) {}
 
-  create(input: CreateArticleInput): Promise<Article> {
+  private async validateImageBlocks(blocks: CreateImageBlockDto[]) {
+    if (blocks.length === 0) {
+      return;
+    }
+
+    const ids = blocks.map((b) => b.fileId);
+
+    const existingFiles = await this.fileService.findMany(ids);
+
+    const existingIds = new Set(existingFiles.map((f) => f.id));
+
+    const missing: { blockIndex: number; fileId: string }[] = [];
+
+    blocks.forEach((block, index) => {
+      if (block.type !== ArticleBlockType.IMAGE) {
+        return;
+      }
+
+      if (!existingIds.has(block.fileId)) {
+        missing.push({ blockIndex: index, fileId: block.fileId });
+      }
+    });
+
+    if (missing.length > 0) {
+      throw new BadRequestException(
+        missing.map((m) => `blocks.${m.blockIndex}.fileId file does not exist`)
+      );
+    }
+  }
+
+  async create(input: CreateArticleInput): Promise<Article> {
+    await this.validateImageBlocks(
+      input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
+    );
+
     return this.prisma.article.create({
       data: {
         ...input,
@@ -155,6 +196,12 @@ export class ArticleService {
   async update(id: string, input: UpdateArticleDto): Promise<Article> {
     const article = await this.getOne(id);
 
+    if (input.blocks) {
+      await this.validateImageBlocks(
+        input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
+      );
+    }
+
     const updated = await this.prisma.article.update({
       where: { id },
       data: {
@@ -221,8 +268,6 @@ export class ArticleService {
         oldImagesIds.delete(block.fileId);
       }
     }
-
-    console.log(oldImagesIds);
 
     return Array.from(oldImagesIds);
   }

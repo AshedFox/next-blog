@@ -8,13 +8,13 @@ import {
 
 import { ArticleBlockType } from '../article.types';
 import {
-  ArticleBlockDto,
-  CodeBlockDto,
-  ImageBlockDto,
-  ParagraphBlockDto,
-  QuoteBlockDto,
-  VideoBlockDto,
-} from './article-block.dto';
+  CreateArticleBlockDto,
+  CreateCodeBlockDto,
+  CreateImageBlockDto,
+  CreateParagraphBlockDto,
+  CreateQuoteBlockDto,
+  CreateVideoBlockDto,
+} from './create-article-block.dto';
 
 export class CreateArticleDto {
   @Length(2, 127)
@@ -26,15 +26,15 @@ export class CreateArticleDto {
     discriminator: {
       property: 'type',
       subTypes: [
-        { value: ParagraphBlockDto, name: ArticleBlockType.PARAGRAPH },
-        { value: ImageBlockDto, name: ArticleBlockType.IMAGE },
-        { value: VideoBlockDto, name: ArticleBlockType.VIDEO },
-        { value: CodeBlockDto, name: ArticleBlockType.CODE },
-        { value: QuoteBlockDto, name: ArticleBlockType.QUOTE },
+        { value: CreateParagraphBlockDto, name: ArticleBlockType.PARAGRAPH },
+        { value: CreateImageBlockDto, name: ArticleBlockType.IMAGE },
+        { value: CreateVideoBlockDto, name: ArticleBlockType.VIDEO },
+        { value: CreateCodeBlockDto, name: ArticleBlockType.CODE },
+        { value: CreateQuoteBlockDto, name: ArticleBlockType.QUOTE },
       ],
     },
     keepDiscriminatorProperty: true,
   })
   @ArrayNotEmpty()
-  blocks!: ArticleBlockDto[];
+  blocks!: CreateArticleBlockDto[];
 }

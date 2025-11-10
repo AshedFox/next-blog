@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { File, FileStatus } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
@@ -97,5 +98,58 @@ export class FileService {
     await this.storageService.delete(id);
 
     return this.prisma.file.delete({ where: { id } });
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async clearOldNotUploaded(): Promise<void> {
+    this.logger.log('Clearing old not uploaded files...');
+
+    const filesToDelete = await this.prisma.file.findMany({
+      where: {
+        status: FileStatus.PENDING,
+        createdAt: { lt: new Date(Date.now() - 3_600_000) },
+      },
+    });
+
+    if (filesToDelete.length === 0) {
+      this.logger.log(`No old not uploaded files`);
+      return;
+    }
+
+    const ids = filesToDelete.map((file) => file.id);
+
+    await this.storageService.deleteMany(ids);
+
+    await this.prisma.file.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    this.logger.log(`Deleted ${filesToDelete.length} old not uploaded files`);
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async clearMarkedAsDeleted(): Promise<void> {
+    this.logger.log('Clearing marked as deleted files...');
+
+    const filesToDelete = await this.prisma.file.findMany({
+      where: {
+        deletedAt: { not: null },
+      },
+    });
+
+    if (filesToDelete.length === 0) {
+      this.logger.log(`No marked as deleted files`);
+      return;
+    }
+
+    const ids = filesToDelete.map((file) => file.id);
+
+    await this.storageService.deleteMany(ids);
+
+    await this.prisma.file.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    this.logger.log(`Deleted ${filesToDelete.length} marked as deleted files`);
   }
 }

@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   Length,
 } from 'class-validator';
 
@@ -28,6 +29,9 @@ export class ImageBlockDto {
 
   @IsUrl()
   url!: string;
+
+  @IsUUID()
+  fileId!: string;
 
   @IsOptional()
   @IsString()

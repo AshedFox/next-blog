@@ -20,7 +20,10 @@ export class ArticleService {
 
   create(input: CreateArticleInput): Promise<Article> {
     return this.prisma.article.create({
-      data: input,
+      data: {
+        ...input,
+        blocks: input.blocks.map((block) => ({ ...block })),
+      },
     });
   }
 
@@ -146,7 +149,15 @@ export class ArticleService {
   async update(id: string, input: UpdateArticleDto): Promise<Article> {
     await this.getOne(id);
 
-    return this.prisma.article.update({ where: { id }, data: input });
+    return this.prisma.article.update({
+      where: { id },
+      data: {
+        ...input,
+        blocks: input.blocks
+          ? input.blocks.map((block) => ({ ...block }))
+          : undefined,
+      },
+    });
   }
 
   async restore(id: string): Promise<Article> {

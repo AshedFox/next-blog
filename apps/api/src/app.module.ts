@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
+import { FileModule } from './file/file.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { UserModule } from './user/user.module';
@@ -15,6 +16,7 @@ import { UserModule } from './user/user.module';
     ScheduleModule.forRoot(),
     AuthModule,
     ArticleModule,
+    FileModule,
     PrismaModule,
     RedisModule,
     UserModule,

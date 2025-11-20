@@ -33,8 +33,6 @@
     "@sindresorhus/slugify": "^3.0.0",
     "@workspace/contracts": "workspace:*",
     "argon2": "^0.44.0",
-    "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.2",
     "cookie-parser": "^1.4.7",
     "ioredis": "^5.8.2",
     "ms": "^2.1.3",

@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
+import { AuthResponseInDto } from '@workspace/contracts';
 import ms, { StringValue } from 'ms';
 
 import { RefreshTokenService } from '@/refesh-token/refresh-token.service';
@@ -9,7 +10,6 @@ import { UserService } from '@/user/user.service';
 
 import { HashService } from '../hash/hash.service';
 import { AuthMetadataDto } from './dto/auth-metadata.dto';
-import { AuthResponseDto } from './dto/auth-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { SignUpDto } from './dto/sign-up.dto';
 
@@ -32,7 +32,7 @@ export class AuthService {
   async signUp(
     { email, password }: SignUpDto,
     metadata?: AuthMetadataDto
-  ): Promise<AuthResponseDto> {
+  ): Promise<AuthResponseInDto> {
     return this.makeAuthResult(
       await this.userService.create({ email, password }),
       metadata
@@ -42,7 +42,7 @@ export class AuthService {
   async login(
     { email, password }: LoginDto,
     metadata?: AuthMetadataDto
-  ): Promise<AuthResponseDto> {
+  ): Promise<AuthResponseInDto> {
     try {
       const user = await this.userService.getOneByEmail(email);
       const passwordMatches = await this.hashService.verify(
@@ -63,7 +63,7 @@ export class AuthService {
   async makeAuthResult(
     user: User,
     metadata?: AuthMetadataDto
-  ): Promise<AuthResponseDto> {
+  ): Promise<AuthResponseInDto> {
     const [accessToken, [refreshToken, { expiresAt: refreshTokenExpiresAt }]] =
       await Promise.all([
         this.generateAccessToken(user.id),
@@ -87,7 +87,7 @@ export class AuthService {
     return this.jwtService.signAsync({ sub: userId });
   }
 
-  async refresh(oldRefreshToken: string): Promise<AuthResponseDto> {
+  async refresh(oldRefreshToken: string): Promise<AuthResponseInDto> {
     try {
       const [refreshToken, { userId, expiresAt: refreshTokenExpiresAt }] =
         await this.refreshTokenService.rotate(oldRefreshToken);

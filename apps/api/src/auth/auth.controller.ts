@@ -1,12 +1,7 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  Req,
-  SerializeOptions,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import { ApiNoContentResponse } from '@nestjs/swagger';
 import type { Request } from 'express';
+import { ZodResponse } from 'nestjs-zod';
 
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
@@ -19,13 +14,9 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
-  @SerializeOptions({ type: AuthResponseDto })
   @Post('login')
-  @HttpCode(200)
-  async login(
-    @Body() data: LoginDto,
-    @Req() req: Request
-  ): Promise<AuthResponseDto> {
+  @ZodResponse({ type: AuthResponseDto, status: 200 })
+  async login(@Body() data: LoginDto, @Req() req: Request) {
     return this.authService.login(data, {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
@@ -33,12 +24,9 @@ export class AuthController {
   }
 
   @Public()
-  @SerializeOptions({ type: AuthResponseDto })
   @Post('sign-up')
-  async signUp(
-    @Body() data: SignUpDto,
-    @Req() req: Request
-  ): Promise<AuthResponseDto> {
+  @ZodResponse({ type: AuthResponseDto, status: 200 })
+  async signUp(@Body() data: SignUpDto, @Req() req: Request) {
     return this.authService.signUp(data, {
       ip: req.ip,
       userAgent: req.headers['user-agent'],
@@ -46,23 +34,22 @@ export class AuthController {
   }
 
   @Public()
-  @SerializeOptions({ type: AuthResponseDto })
   @Post('refresh')
-  @HttpCode(200)
-  async refresh(
-    @Body('refreshToken') refreshToken: string
-  ): Promise<AuthResponseDto> {
+  @ZodResponse({ type: AuthResponseDto, status: 200 })
+  async refresh(@Body('refreshToken') refreshToken: string) {
     return this.authService.refresh(refreshToken);
   }
 
   @Post('logout')
   @HttpCode(204)
+  @ApiNoContentResponse()
   async logout(@Body('refreshToken') refreshToken: string): Promise<void> {
     await this.authService.logout(refreshToken);
   }
 
   @Post('logout-everywhere')
   @HttpCode(204)
+  @ApiNoContentResponse()
   async logoutEverywhere(
     @Body('refreshToken') refreshToken: string
   ): Promise<void> {

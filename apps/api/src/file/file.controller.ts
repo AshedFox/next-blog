@@ -1,6 +1,8 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
 import { File } from '@prisma/client';
+import { ZodResponse } from 'nestjs-zod';
 
+import { FileDto } from './dto/file.dto';
 import { InitUploadDto } from './dto/init-upload.dto';
 import { InitUploadResponseDto } from './dto/init-upload-response.dto';
 import { FileService } from './file.service';
@@ -10,12 +12,14 @@ export class FileController {
   constructor(private readonly fileService: FileService) {}
 
   @Post('init')
-  initUpload(@Body() data: InitUploadDto): Promise<InitUploadResponseDto> {
+  @ZodResponse({ type: InitUploadResponseDto, status: 200 })
+  initUpload(@Body() data: InitUploadDto) {
     return this.fileService.initUpload(data);
   }
 
   @Post(':id/complete')
-  completeUpload(@Param('id') id: string): Promise<File> {
+  @ZodResponse({ type: FileDto, status: 200 })
+  completeUpload(@Param('id') id: string) {
     return this.fileService.completeUpload(id);
   }
 }

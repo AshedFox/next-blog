@@ -1,7 +1,8 @@
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
@@ -23,7 +24,8 @@ import { UserModule } from './user/user.module';
   ],
   controllers: [],
   providers: [
-    { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: ZodSerializerInterceptor },
+    { provide: APP_PIPE, useClass: ZodValidationPipe },
   ],
 })
 export class AppModule {}

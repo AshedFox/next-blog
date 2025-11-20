@@ -1,7 +1,8 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module';
 
@@ -15,17 +16,19 @@ async function bootstrap() {
       exposedHeaders: 'Content-Length, Content-Range',
     },
   });
-  app.set('query parser', 'extended');
   app.use(cookieParser());
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    })
-  );
-
   app.setGlobalPrefix('api');
+
+  const config = new DocumentBuilder()
+    .setTitle('NextBlog API')
+    .setVersion('1.0')
+    .build();
+  const openApiDoc = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('swagger', app, cleanupOpenApiDoc(openApiDoc), {
+    jsonDocumentUrl: '/swagger/json',
+    useGlobalPrefix: true,
+  });
+
   await app.listen(process.env.PORT ?? 3001);
 }
 

@@ -4,21 +4,19 @@ import {
   Delete,
   ForbiddenException,
   Get,
-  HttpCode,
   Param,
   Patch,
   Post,
   Query,
 } from '@nestjs/common';
 import { ArticleStatus, User, UserRole } from '@prisma/client';
+import { ZodResponse } from 'nestjs-zod';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { MinRole } from '@/auth/decorators/min-role.decorator';
 import { Public } from '@/auth/decorators/public.decorator';
-import { PaginationType } from '@/common/search/types/pagination.types';
 import { DeletedMode } from '@/common/soft-delete/deleted-filter';
 
-import { ArticleSerializer } from './article.serializer';
 import { ArticleService } from './article.service';
 import { ArticleDto } from './dto/article.dto';
 import { ArticleGetOneDto } from './dto/article-get-one.dto';
@@ -29,17 +27,15 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Controller('articles')
 export class ArticleController {
-  constructor(
-    private readonly articleService: ArticleService,
-    private readonly articleSerializer: ArticleSerializer
-  ) {}
+  constructor(private readonly articleService: ArticleService) {}
 
   @Post()
+  @ZodResponse({ type: ArticleDto, status: 200 })
   async create(
     @Body() createArticleDto: CreateArticleDto,
     @CurrentUser('id') userId: string
-  ): Promise<ArticleDto> {
-    return this.articleSerializer.serialize(
+  ) {
+    return this.articleService.enrich(
       await this.articleService.create({
         ...createArticleDto,
         authorId: userId,
@@ -49,71 +45,65 @@ export class ArticleController {
 
   @Public()
   @Get(':id')
-  async getOne(
-    @Param('id') id: string,
-    @Query() query: ArticleGetOneDto
-  ): Promise<ArticleDto> {
-    return this.articleSerializer.serialize(
+  @ZodResponse({ type: ArticleDto })
+  async getOne(@Param('id') id: string, @Query() query: ArticleGetOneDto) {
+    return this.articleService.enrich(
       await this.articleService.getOne(id, undefined, query.include)
     );
   }
 
   @Public()
   @Get()
-  async search(
-    @Query() query: ArticleSearchDto
-  ): Promise<ArticleSearchResponseDto> {
-    const pagination = query.getPagination();
+  @ZodResponse({ type: ArticleSearchResponseDto })
+  async search(@Query() query: ArticleSearchDto) {
+    const { page, limit } = query;
 
-    if (pagination.type === PaginationType.CURSOR) {
+    if (!page) {
       const data = await this.articleService.search(query);
-      const hasNextPage = data.length > pagination.limit;
+      const hasNextPage = data.length > limit;
 
       return {
         data: data
-          .slice(0, pagination.limit)
-          .map((article) => this.articleSerializer.serialize(article)),
+          .slice(0, limit)
+          .map((article) => this.articleService.enrich(article)),
         meta: {
-          limit: pagination.limit,
-          nextCursor: hasNextPage ? data[data.length - 1]!.id : undefined,
+          limit,
+          cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
           hasNextPage,
         },
       };
     }
 
     const [data, count] = await this.articleService.searchAndCount(query);
-    const totalPages = Math.ceil(count / pagination.limit);
+    const totalPages = Math.ceil(count / limit);
 
     return {
-      data: data.map((article) => this.articleSerializer.serialize(article)),
+      data: data.map((article) => this.articleService.enrich(article)),
       meta: {
-        limit: pagination.limit,
+        limit,
         totalCount: count,
         totalPages,
-        page: pagination.page,
-        hasNextPage: count > pagination.page * pagination.limit,
-        hasPreviousPage:
-          pagination.page > 1 && pagination.page - 1 <= totalPages,
+        page,
+        hasNextPage: count > page * limit,
+        hasPreviousPage: page > 1 && page - 1 <= totalPages,
       },
     };
   }
 
   @Patch(':id')
+  @ZodResponse({ type: ArticleDto })
   async update(
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto
-  ): Promise<ArticleDto> {
-    return this.articleSerializer.serialize(
+  ) {
+    return this.articleService.enrich(
       await this.articleService.update(id, updateArticleDto)
     );
   }
 
-  @HttpCode(200)
   @Post(':id/restore')
-  async restore(
-    @Param('id') id: string,
-    @CurrentUser() user: User
-  ): Promise<ArticleDto> {
+  @ZodResponse({ type: ArticleDto, status: 200 })
+  async restore(@Param('id') id: string, @CurrentUser() user: User) {
     const article = await this.articleService.getOne(id, DeletedMode.ONLY);
 
     if (article.authorId !== user.id && user.role !== UserRole.ADMIN) {
@@ -122,17 +112,12 @@ export class ArticleController {
       );
     }
 
-    return this.articleSerializer.serialize(
-      await this.articleService.restore(id)
-    );
+    return this.articleService.enrich(await this.articleService.restore(id));
   }
 
-  @HttpCode(200)
   @Post(':id/request-publish')
-  async publish(
-    @Param('id') id: string,
-    @CurrentUser('id') userId: string
-  ): Promise<ArticleDto> {
+  @ZodResponse({ type: ArticleDto, status: 200 })
+  async publish(@Param('id') id: string, @CurrentUser('id') userId: string) {
     const article = await this.articleService.getOne(id);
 
     if (article.authorId !== userId) {
@@ -141,34 +126,32 @@ export class ArticleController {
       );
     }
 
-    return this.articleSerializer.serialize(
+    return this.articleService.enrich(
       await this.articleService.changeStatus(id, ArticleStatus.IN_REVIEW)
     );
   }
 
-  @HttpCode(200)
   @MinRole(UserRole.ADMIN)
   @Post(':id/approve')
-  async approve(@Param('id') id: string): Promise<ArticleDto> {
-    return this.articleSerializer.serialize(
+  @ZodResponse({ type: ArticleDto, status: 200 })
+  async approve(@Param('id') id: string) {
+    return this.articleService.enrich(
       await this.articleService.changeStatus(id, ArticleStatus.PUBLISHED)
     );
   }
 
-  @HttpCode(200)
   @MinRole(UserRole.ADMIN)
   @Post(':id/reject')
-  async reject(@Param('id') id: string): Promise<ArticleDto> {
-    return this.articleSerializer.serialize(
+  @ZodResponse({ type: ArticleDto, status: 200 })
+  async reject(@Param('id') id: string) {
+    return this.articleService.enrich(
       await this.articleService.changeStatus(id, ArticleStatus.REJECTED)
     );
   }
 
   @Delete(':id')
-  async delete(
-    @Param('id') id: string,
-    @CurrentUser() user: User
-  ): Promise<ArticleDto> {
+  @ZodResponse({ type: ArticleDto })
+  async delete(@Param('id') id: string, @CurrentUser() user: User) {
     const article = await this.articleService.getOne(id);
 
     if (article.authorId !== user.id && user.role !== UserRole.ADMIN) {
@@ -177,8 +160,6 @@ export class ArticleController {
       );
     }
 
-    return this.articleSerializer.serialize(
-      await this.articleService.softDelete(id)
-    );
+    return this.articleService.enrich(await this.articleService.softDelete(id));
   }
 }

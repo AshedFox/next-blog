@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
+import type { UserInclude } from '@workspace/contracts';
 
 import { HashService } from '@/hash/hash.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -74,7 +75,7 @@ export class UserService {
   async findOneById(
     id: string,
     useCache: boolean = true,
-    include: (keyof Prisma.UserInclude)[] = []
+    include: UserInclude[] = []
   ): Promise<User | null> {
     if (useCache) {
       const cached = await this.cache.get(id);
@@ -99,7 +100,7 @@ export class UserService {
   async getOneById(
     id: string,
     useCache: boolean = true,
-    include: (keyof Prisma.UserInclude)[] = []
+    include: UserInclude[] = []
   ): Promise<User> {
     const user = await this.findOneById(id, useCache, include);
 

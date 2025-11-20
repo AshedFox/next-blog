@@ -1,9 +1,4 @@
-import { IsEmail, IsStrongPassword } from 'class-validator';
+import { loginSchema } from '@workspace/contracts';
+import { createZodDto } from 'nestjs-zod';
 
-export class LoginDto {
-  @IsEmail()
-  email!: string;
-
-  @IsStrongPassword({ minSymbols: 0 })
-  password!: string;
-}
+export class LoginDto extends createZodDto(loginSchema) {}

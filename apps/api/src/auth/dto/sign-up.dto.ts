@@ -1,11 +1,4 @@
-import { IsString } from 'class-validator';
+import { signUpSchema } from '@workspace/contracts';
+import { createZodDto } from 'nestjs-zod';
 
-import { Match } from '@/common/validation/match.decorator';
-
-import { LoginDto } from './login.dto';
-
-export class SignUpDto extends LoginDto {
-  @IsString()
-  @Match<SignUpDto>('password')
-  passwordComparison!: string;
-}
+export class SignUpDto extends createZodDto(signUpSchema) {}

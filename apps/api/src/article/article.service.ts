@@ -4,31 +4,32 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Article, ArticleStatus, Prisma } from '@prisma/client';
-
 import {
-  mapFilterToPrisma,
-  PaginationType,
-  ParsedFilters,
-} from '@/common/search';
+  ArticleBlockDto,
+  ArticleBlockType,
+  ArticleFilters,
+  type ArticleInclude,
+  ArticleInDto,
+  CreateArticleBlockDto,
+  CreateImageBlockDto,
+  VideoProvider,
+} from '@workspace/contracts';
+
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
 import { FileService } from '@/file/file.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { StorageService } from '@/storage/storage.service';
 
-import { ArticleBlockType, CreateArticleInput } from './article.types';
-import { ARTICLE_SEARCH_CONFIG } from './article-search.config';
-import { ArticleBlockDto } from './dto/article-block.dto';
+import { CreateArticleInput } from './article.types';
 import { ArticleSearchDto } from './dto/article-search.dto';
-import {
-  CreateArticleBlockDto,
-  CreateImageBlockDto,
-} from './dto/create-article-block.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Injectable()
 export class ArticleService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly fileService: FileService
+    private readonly fileService: FileService,
+    private readonly storageService: StorageService
   ) {}
 
   private async validateImageBlocks(blocks: CreateImageBlockDto[]) {
@@ -61,6 +62,27 @@ export class ArticleService {
     }
   }
 
+  enrich(article: Article): ArticleInDto {
+    return {
+      ...article,
+      blocks: (article.blocks as Prisma.JsonArray).map((value) => {
+        const block = value as ArticleBlockDto;
+
+        if (block.type === ArticleBlockType.IMAGE) {
+          block.url = this.storageService.getPublicUrl(block.fileId);
+        } else if (block.type === ArticleBlockType.VIDEO) {
+          if (block.provider === VideoProvider.YOUTUBE) {
+            block.embedUrl = `https://www.youtube.com/embed/${block.videoId}`;
+          } else if (block.provider === VideoProvider.VIMEO) {
+            block.embedUrl = `https://player.vimeo.com/video/${block.videoId}`;
+          }
+        }
+
+        return block;
+      }),
+    };
+  }
+
   async create(input: CreateArticleInput): Promise<Article> {
     await this.validateImageBlocks(
       input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
@@ -74,20 +96,26 @@ export class ArticleService {
     });
   }
 
-  private buildFiltersWhere(
-    filters: ParsedFilters<Article>
-  ): Prisma.ArticleWhereInput {
+  private buildFiltersWhere(filters: ArticleFilters): Prisma.ArticleWhereInput {
     const where: Prisma.ArticleWhereInput = {};
 
-    for (const [field, fieldFilters] of Object.entries(filters)) {
-      if (!fieldFilters?.length) {
-        continue;
-      }
+    if (filters.authorId) {
+      where.authorId = { in: filters.authorId };
+    }
 
-      where[field as keyof Article] = fieldFilters.reduce(
-        (acc, filter) => ({ ...acc, ...mapFilterToPrisma(filter) }),
-        {} as Record<string, unknown>
-      );
+    if (filters.status) {
+      where.status = { in: filters.status };
+    }
+
+    if (filters.title) {
+      where.title = { contains: filters.title, mode: 'insensitive' };
+    }
+
+    if (filters.createdAtGte || filters.createdAtLte) {
+      where.createdAt = {
+        gte: filters.createdAtGte,
+        lte: filters.createdAtLte,
+      };
     }
 
     return where;
@@ -97,44 +125,37 @@ export class ArticleService {
     query: ArticleSearchDto
   ): Prisma.ArticleFindManyArgs {
     const args: Prisma.ArticleFindManyArgs = {};
+    const { page, limit, cursor, include, search, sort, ...filters } = query;
 
-    const pagination = query.getPagination();
-
-    if (pagination.type === PaginationType.OFFSET) {
-      args.take = pagination.limit;
-      args.skip = (pagination.page - 1) * pagination.limit;
-    } else if (pagination.type === PaginationType.CURSOR) {
-      args.take = pagination.limit + 1;
-      args.cursor = query.cursor ? { id: query.cursor } : undefined;
+    if (page) {
+      args.take = limit;
+      args.skip = (page - 1) * limit;
+    } else {
+      args.take = limit + 1;
+      args.cursor = cursor ? { id: cursor } : undefined;
     }
 
-    if (query.include.length > 0) {
-      args.include = query.include.reduce((acc, item) => {
+    if (include && include.length > 0) {
+      args.include = include.reduce((acc, item) => {
         acc[item] = true;
         return acc;
       }, {} as Prisma.ArticleInclude);
     }
 
-    if (query.sort.length > 0) {
-      args.orderBy = query.sort.reduce((acc, item) => {
-        acc[item.field] = item.direction;
-        return acc;
-      }, {} as Prisma.ArticleOrderByWithRelationInput);
+    if (sort) {
+      args.orderBy = Object.entries(sort).map(([field, direction]) => ({
+        [field]: direction,
+      }));
     }
 
-    if (query.search) {
+    if (search) {
       args.where = {
-        OR: ARTICLE_SEARCH_CONFIG.searchableFields?.map(
-          (field) =>
-            ({
-              [field]: { contains: query.search, mode: 'insensitive' },
-            }) as Prisma.ArticleWhereInput
-        ),
+        OR: [{ title: { contains: search, mode: 'insensitive' } }],
       };
     }
 
-    if (query.filters && Object.keys(query.filters).length > 0) {
-      const filterWhere = this.buildFiltersWhere(query.filters);
+    if (filters && Object.keys(filters).length > 0) {
+      const filterWhere = this.buildFiltersWhere(filters);
       args.where = {
         ...args.where,
         ...filterWhere,
@@ -162,7 +183,7 @@ export class ArticleService {
   async findOne(
     id: string,
     mode: DeletedMode = 'exclude',
-    include: (keyof Prisma.ArticleInclude)[] = []
+    include: ArticleInclude[] = []
   ): Promise<Article | null> {
     return this.prisma.article.findUnique({
       where: {
@@ -182,7 +203,7 @@ export class ArticleService {
   async getOne(
     id: string,
     mode: DeletedMode = 'exclude',
-    include: (keyof Prisma.ArticleInclude)[] = []
+    include: ArticleInclude[] = []
   ): Promise<Article> {
     const article = await this.findOne(id, mode, include);
 

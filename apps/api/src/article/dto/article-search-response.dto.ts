@@ -1,15 +1,6 @@
-import { Type } from 'class-transformer';
+import { articleSearchResponseSchema } from '@workspace/contracts';
+import { createZodDto } from 'nestjs-zod';
 
-import {
-  PaginatedResult,
-  PaginationMeta,
-} from '@/common/search/types/search.types';
-
-import { ArticleDto } from './article.dto';
-
-export class ArticleSearchResponseDto implements PaginatedResult<ArticleDto> {
-  @Type(() => ArticleDto)
-  data!: ArticleDto[];
-
-  meta!: PaginationMeta;
-}
+export class ArticleSearchResponseDto extends createZodDto(
+  articleSearchResponseSchema
+) {}

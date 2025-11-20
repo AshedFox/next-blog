@@ -1,8 +1,4 @@
-import { IsOptional, IsString, Length } from 'class-validator';
+import { updateUserSchema } from '@workspace/contracts';
+import { createZodDto } from 'nestjs-zod';
 
-export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  @Length(2, 127)
-  name?: string;
-}
+export class UpdateUserDto extends createZodDto(updateUserSchema) {}

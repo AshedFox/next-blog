@@ -1,11 +1,9 @@
-import { Prisma } from '@prisma/client';
-import { IsOptional } from 'class-validator';
+import { userIncludeSchema } from '@workspace/contracts';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
-import { TransformInclude, ValidateRelations } from '@/common/search';
-
-export class UserGetOneDto {
-  @IsOptional()
-  @TransformInclude<Prisma.UserInclude>()
-  @ValidateRelations<Prisma.UserInclude>({ relations: ['articles'] })
-  include: (keyof Prisma.UserInclude)[] = [];
-}
+export class UserGetOneDto extends createZodDto(
+  z.object({
+    include: userIncludeSchema.optional(),
+  })
+) {}

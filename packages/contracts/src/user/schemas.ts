@@ -1,7 +1,10 @@
 import z from 'zod';
 
-import { datetimeOutSchema } from '../common';
+import { baseArticleSchema } from '../article';
+import { createIncludeSchema, datetimeOutSchema } from '../common';
 import { UserRole, UserStatus } from './enums';
+import { UserInclude } from './enums';
+import { UserDto } from './types';
 
 export const createUserSchema = z.object({
   email: z.email().trim(),
@@ -19,7 +22,7 @@ export const updateUserSchema = z.object({
   name: z.string().min(2).max(120).optional(),
 });
 
-export const userSchema = z.object({
+export const baseUserSchema = z.object({
   id: z.uuid(),
   email: z.email().trim(),
   username: z.string().min(2).max(60),
@@ -30,3 +33,29 @@ export const userSchema = z.object({
   updatedAt: datetimeOutSchema,
   deletedAt: datetimeOutSchema.nullish(),
 });
+
+export const userSchema = baseUserSchema.extend({
+  articles: z.lazy(() => z.array(baseArticleSchema)).optional(),
+});
+
+export const userIncludeSchema = createIncludeSchema(UserInclude);
+
+export function createUserWithRelationsSchema<T extends readonly UserInclude[]>(
+  include: T
+): z.ZodType<
+  UserDto & {
+    [K in Extract<T[number], keyof UserDto>]-?: NonNullable<UserDto[K]>;
+  }
+> {
+  const includeSet = new Set(include);
+
+  return userSchema.extend({
+    author: includeSet.has('articles')
+      ? userSchema.shape.articles.unwrap()
+      : userSchema.shape.articles,
+  }) as unknown as z.ZodType<
+    UserDto & {
+      [K in Extract<T[number], keyof UserDto>]-?: NonNullable<UserDto[K]>;
+    }
+  >;
+}

@@ -1,13 +1,13 @@
 'use server';
 
+import { LoginDto } from '@workspace/contracts';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { authServerApi } from '../api/server';
 import { setAccessToken, setRefreshToken } from '../domain/tokens';
-import { LoginInput } from '../types';
 
-export async function login(input: LoginInput) {
+export async function login(input: LoginDto) {
   const { data, error } = await authServerApi.login(input);
 
   if (error) {

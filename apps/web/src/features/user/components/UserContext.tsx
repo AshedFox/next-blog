@@ -1,13 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
+import { UserDto } from '@workspace/contracts';
 import { useRouter } from 'next/navigation';
 import { createContext, ReactNode, useCallback, useEffect } from 'react';
 
-import { clientApi } from '@/lib/api';
-
-import { User } from '../types';
+import { clientApi } from '@/lib/api/client';
 
 type UserContextValue = {
-  user: User;
+  user: UserDto;
   refetchUser: () => Promise<void>;
 };
 
@@ -17,13 +16,13 @@ export const UserContext = createContext<UserContextValue | undefined>(
 
 type Props = {
   children: ReactNode;
-  user: User;
+  user: UserDto;
 };
 
 export const UserProvider = ({ user, children }: Props) => {
   const { data, refetch, error } = useQuery({
     queryKey: ['user', user.id],
-    queryFn: () => clientApi.getOrThrow<User>(`/api/users/me`),
+    queryFn: () => clientApi.getOrThrow<UserDto>(`/api/users/me`),
     initialData: user,
     refetchInterval: 60 * 1000,
   });

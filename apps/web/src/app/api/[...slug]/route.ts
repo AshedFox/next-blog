@@ -1,3 +1,4 @@
+import { AuthResponseDto } from '@workspace/contracts';
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
@@ -8,7 +9,6 @@ import {
   setAccessToken,
   setRefreshToken,
 } from '@/features/auth/server';
-import { AuthResult } from '@/features/auth/types';
 import { clientEnv } from '@/lib/env/client';
 
 type Context = {
@@ -23,7 +23,7 @@ async function proxyRequest(
   const refreshToken = await getRefreshToken(request.cookies);
 
   let tokenToUse = accessToken;
-  let refreshResult: AuthResult | null = null;
+  let refreshResult: AuthResponseDto | null = null;
 
   const { isValid, needsRefresh } = accessToken
     ? checkAccessToken(accessToken)

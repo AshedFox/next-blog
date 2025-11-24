@@ -1,6 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { SignUpDto, signUpSchema } from '@workspace/contracts';
 import { Button, buttonVariants } from '@workspace/ui/components/button';
 import {
   Card,
@@ -25,11 +26,9 @@ import { toast } from 'sonner';
 import Spinner from '@/shared/components/Spinner';
 
 import { signUp } from '../actions/sign-up';
-import { SignUpInput } from '../types';
-import { signUpSchema } from '../validation/sign-up-schema';
 
 export const SignUpForm = () => {
-  const form = useForm<SignUpInput>({
+  const form = useForm<SignUpDto>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
@@ -38,7 +37,7 @@ export const SignUpForm = () => {
     },
   });
 
-  const onSubmit = async (data: SignUpInput) => {
+  const onSubmit = async (data: SignUpDto) => {
     const { message } = await signUp(data);
 
     if (message) {

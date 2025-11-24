@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ArticleStatus, User, UserRole } from '@prisma/client';
 import { ZodResponse } from 'nestjs-zod';
+import z from 'zod';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { MinRole } from '@/auth/decorators/min-role.decorator';
@@ -44,11 +45,22 @@ export class ArticleController {
   }
 
   @Public()
-  @Get(':id')
+  @Get(':idOrSlug')
   @ZodResponse({ type: ArticleDto })
-  async getOne(@Param('id') id: string, @Query() query: ArticleGetOneDto) {
+  async getOne(
+    @Param('idOrSlug') idOrSlug: string,
+    @Query() query: ArticleGetOneDto
+  ) {
+    const isId = (await z.uuid().safeParseAsync(idOrSlug)).success;
+
     return this.articleService.enrich(
-      await this.articleService.getOne(id, undefined, query.include)
+      isId
+        ? await this.articleService.getOne(idOrSlug, undefined, query.include)
+        : await this.articleService.getOneBySlug(
+            idOrSlug,
+            undefined,
+            query.include
+          )
     );
   }
 

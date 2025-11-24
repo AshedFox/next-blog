@@ -1,9 +1,11 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Article, ArticleStatus, Prisma } from '@prisma/client';
+import slugify from '@sindresorhus/slugify';
 import {
   ArticleBlockDto,
   ArticleBlockType,
@@ -14,6 +16,7 @@ import {
   CreateImageBlockDto,
   VideoProvider,
 } from '@workspace/contracts';
+import { randomBytes } from 'crypto';
 
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
 import { FileService } from '@/file/file.service';
@@ -88,12 +91,38 @@ export class ArticleService {
       input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
     );
 
-    return this.prisma.article.create({
-      data: {
-        ...input,
-        blocks: input.blocks.map((block) => ({ ...block })),
-      },
-    });
+    const maxAttempts = 3;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const slug = slugify(
+          `${input.title} ${randomBytes(6).toString('base64url')}`
+        );
+
+        return this.prisma.article.create({
+          data: {
+            ...input,
+            slug,
+          },
+        });
+      } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+          if (error.code === 'P2002') {
+            if (attempt === maxAttempts - 1) {
+              throw new InternalServerErrorException(
+                'Failed to generate unique slug'
+              );
+            }
+            continue;
+          }
+        }
+        throw error;
+      }
+    }
+
+    throw new InternalServerErrorException(
+      'Impossible happended, unable to create article'
+    );
   }
 
   private buildFiltersWhere(filters: ArticleFilters): Prisma.ArticleWhereInput {

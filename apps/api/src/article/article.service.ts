@@ -243,6 +243,40 @@ export class ArticleService {
     return article;
   }
 
+  async findOneBySlug(
+    slug: string,
+    mode: DeletedMode = 'exclude',
+    include: ArticleInclude[] = []
+  ): Promise<Article | null> {
+    return this.prisma.article.findUnique({
+      where: {
+        slug,
+        deletedAt: getDeletedFilter(mode),
+      },
+      include:
+        include.length > 0
+          ? include.reduce((acc, item) => {
+              acc[item] = true;
+              return acc;
+            }, {} as Prisma.ArticleInclude)
+          : undefined,
+    });
+  }
+
+  async getOneBySlug(
+    slug: string,
+    mode: DeletedMode = 'exclude',
+    include: ArticleInclude[] = []
+  ): Promise<Article> {
+    const article = await this.findOneBySlug(slug, mode, include);
+
+    if (!article) {
+      throw new NotFoundException('Article not found!');
+    }
+
+    return article;
+  }
+
   async update(id: string, input: UpdateArticleDto): Promise<Article> {
     const article = await this.getOne(id);
 

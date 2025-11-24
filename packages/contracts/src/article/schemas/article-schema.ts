@@ -8,6 +8,7 @@ import { articleBlockSchema } from './article-blocks-schemas';
 
 export const baseArticleSchema = z.object({
   id: z.uuid(),
+  slug: z.string().min(2).max(120),
   title: z.string().min(2).max(120),
   status: z.enum(ArticleStatus),
   createdAt: datetimeOutSchema,

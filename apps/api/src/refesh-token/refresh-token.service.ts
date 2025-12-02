@@ -29,6 +29,10 @@ export class RefreshTokenService {
     );
   }
 
+  getTokenHash(token: string): string {
+    return this.hashService.hashHMAC(token, this.refreshTokenSecret);
+  }
+
   async create(input: CreateRefreshTokenDto): Promise<[string, RefreshToken]> {
     const token = randomBytes(32).toString('base64url');
 
@@ -37,7 +41,7 @@ export class RefreshTokenService {
       await this.prisma.refreshToken.create({
         data: {
           ...input,
-          tokenHash: this.hashService.hashHMAC(token, this.refreshTokenSecret),
+          tokenHash: this.getTokenHash(token),
           expiresAt: new Date(Date.now() + this.refreshTokenLifetime),
         },
       }),
@@ -47,7 +51,7 @@ export class RefreshTokenService {
   async getOneByToken(token: string): Promise<RefreshToken> {
     const refeshToken = await this.prisma.refreshToken.findUnique({
       where: {
-        tokenHash: this.hashService.hashHMAC(token, this.refreshTokenSecret),
+        tokenHash: this.getTokenHash(token),
         revokedAt: null,
       },
     });
@@ -70,7 +74,7 @@ export class RefreshTokenService {
   }
 
   async revokeByToken(token: string): Promise<RefreshToken> {
-    const tokenHash = this.hashService.hashHMAC(token, this.refreshTokenSecret);
+    const tokenHash = this.getTokenHash(token);
     const refreshToken = await this.prisma.refreshToken.findUnique({
       where: { tokenHash, revokedAt: null },
     });
@@ -95,7 +99,7 @@ export class RefreshTokenService {
   }
 
   async deleteByToken(token: string): Promise<RefreshToken> {
-    const tokenHash = this.hashService.hashHMAC(token, this.refreshTokenSecret);
+    const tokenHash = this.getTokenHash(token);
     const refreshToken = await this.prisma.refreshToken.findUnique({
       where: { tokenHash },
     });

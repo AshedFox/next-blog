@@ -59,9 +59,7 @@ export const createSoftDeleteExtension = (...models: Prisma.ModelName[]) => {
               operation === 'update' ||
               operation === 'updateMany' ||
               operation === 'updateManyAndReturn' ||
-              operation === 'count' ||
-              operation === 'delete' ||
-              operation === 'deleteMany'
+              operation === 'count'
             ) {
               args.where = {
                 deletedAt: null,

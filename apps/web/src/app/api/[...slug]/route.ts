@@ -15,6 +15,17 @@ type Context = {
   params: Promise<{ slug: string[] }>;
 };
 
+const HOP_BY_HOP_HEADERS = [
+  'connection',
+  'keep-alive',
+  'transfer-encoding',
+  'upgrade',
+  'host',
+  'content-length',
+  'cookie',
+  'referer',
+];
+
 async function proxyRequest(
   request: NextRequest,
   slug: string[]
@@ -52,11 +63,7 @@ async function proxyRequest(
   const headers = new Headers();
 
   request.headers.forEach((value, key) => {
-    if (
-      !['host', 'connection', 'cookie', 'content-length'].includes(
-        key.toLowerCase()
-      )
-    ) {
+    if (!HOP_BY_HOP_HEADERS.includes(key.toLowerCase())) {
       headers.set(key, value);
     }
   });

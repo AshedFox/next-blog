@@ -15,6 +15,17 @@ type Context = {
   params: Promise<{ slug: string[] }>;
 };
 
+const HOP_BY_HOP_HEADERS = [
+  'connection',
+  'keep-alive',
+  'transfer-encoding',
+  'upgrade',
+  'host',
+  'content-length',
+  'cookie',
+  'referer',
+];
+
 async function proxyRequest(
   request: NextRequest,
   slug: string[]
@@ -38,8 +49,6 @@ async function proxyRequest(
     } else {
       tokenToUse = undefined;
     }
-  } else {
-    tokenToUse = undefined;
   }
 
   const backendUrl = new URL(
@@ -54,75 +63,38 @@ async function proxyRequest(
   const headers = new Headers();
 
   request.headers.forEach((value, key) => {
-    if (
-      !['host', 'connection', 'cookie', 'content-length'].includes(
-        key.toLowerCase()
-      )
-    ) {
+    if (!HOP_BY_HOP_HEADERS.includes(key.toLowerCase())) {
       headers.set(key, value);
     }
   });
 
   if (tokenToUse) {
-    headers.set('Authorization', `Bearer ${tokenToUse}`);
+    headers.set('authorization', `Bearer ${tokenToUse}`);
   }
 
   const clientIp = request.headers.get('x-forwarded-for');
 
   if (clientIp) {
-    headers.set('X-Forwarded-For', clientIp);
-  }
-
-  let body: BodyInit | null = null;
-
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    try {
-      const contentType = request.headers.get('content-type');
-
-      if (contentType?.includes('application/json')) {
-        const json = await request.json();
-        body = JSON.stringify(json);
-      } else if (contentType?.includes('multipart/form-data')) {
-        body = await request.arrayBuffer();
-      } else {
-        body = await request.text();
-      }
-    } catch (error) {
-      console.error('Error reading request body:', error);
-    }
+    headers.set('x-forwarded-for', clientIp);
   }
 
   try {
-    const backendResponse = await fetch(backendUrl.toString(), {
+    const backendResponse = await fetch(backendUrl, {
       method: request.method,
       headers,
-      body,
-      // @ts-expect-error - Next.js fetch extension
-      duplex: body ? 'half' : undefined,
+      body: request.body,
+      // @ts-expect-error - Next.js streaming body
+      duplex: 'half',
     });
 
-    const responseHeaders = new Headers();
-
-    backendResponse.headers.forEach((value, key) => {
-      if (
-        ![
-          'set-cookie',
-          'content-encoding',
-          'transfer-encoding',
-          'connection',
-        ].includes(key.toLowerCase())
-      ) {
-        responseHeaders.set(key, value);
-      }
-    });
-
-    const responseBody = await backendResponse.arrayBuffer();
-
-    const response = new NextResponse(responseBody, {
+    const response = new NextResponse(backendResponse.body, {
       status: backendResponse.status,
       statusText: backendResponse.statusText,
-      headers: responseHeaders,
+      headers: backendResponse.headers,
     });
+
+    response.headers.delete('content-encoding');
+    response.headers.delete('content-length');
 
     if (refreshResult) {
       setAccessToken(

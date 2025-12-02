@@ -78,32 +78,13 @@ async function proxyRequest(
     headers.set('x-forwarded-for', clientIp);
   }
 
-  let body: BodyInit | null = null;
-
-  if (request.method !== 'GET' && request.method !== 'HEAD') {
-    try {
-      const contentType = request.headers.get('content-type');
-
-      if (contentType?.includes('application/json')) {
-        const json = await request.json();
-        body = JSON.stringify(json);
-      } else if (contentType?.includes('multipart/form-data')) {
-        body = await request.arrayBuffer();
-      } else {
-        body = await request.text();
-      }
-    } catch (error) {
-      console.error('Error reading request body:', error);
-    }
-  }
-
   try {
-    const backendResponse = await fetch(backendUrl.toString(), {
+    const backendResponse = await fetch(backendUrl, {
       method: request.method,
       headers,
-      body,
-      // @ts-expect-error - Next.js fetch extension
-      duplex: body ? 'half' : undefined,
+      body: request.body,
+      // @ts-expect-error - Next.js streaming body
+      duplex: 'half',
     });
 
     const responseHeaders = new Headers();

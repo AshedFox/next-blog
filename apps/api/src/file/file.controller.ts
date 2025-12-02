@@ -1,5 +1,4 @@
 import { Body, Controller, Param, Post } from '@nestjs/common';
-import { File } from '@prisma/client';
 import { ZodResponse } from 'nestjs-zod';
 
 import { FileDto } from './dto/file.dto';
@@ -19,7 +18,7 @@ export class FileController {
 
   @Post(':id/complete')
   @ZodResponse({ type: FileDto, status: 200 })
-  completeUpload(@Param('id') id: string) {
-    return this.fileService.completeUpload(id);
+  async completeUpload(@Param('id') id: string) {
+    return this.fileService.enrich(await this.fileService.completeUpload(id));
   }
 }

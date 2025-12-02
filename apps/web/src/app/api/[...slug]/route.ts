@@ -38,8 +38,6 @@ async function proxyRequest(
     } else {
       tokenToUse = undefined;
     }
-  } else {
-    tokenToUse = undefined;
   }
 
   const backendUrl = new URL(

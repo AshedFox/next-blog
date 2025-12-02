@@ -3,8 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import { AuthResponseInDto } from '@workspace/contracts';
+import Redis from 'ioredis';
 import ms, { StringValue } from 'ms';
+import SuperJSON from 'superjson';
+import { setTimeout } from 'timers/promises';
 
+import { InjectRedis } from '@/redis/redis.decorator';
 import { RefreshTokenService } from '@/refesh-token/refresh-token.service';
 import { UserService } from '@/user/user.service';
 
@@ -22,7 +26,9 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly userService: UserService,
     private readonly hashService: HashService,
-    private readonly refreshTokenService: RefreshTokenService
+    private readonly refreshTokenService: RefreshTokenService,
+    @InjectRedis()
+    private readonly redis: Redis
   ) {
     this.accessTokenExpiresIn = ms(
       this.configService.getOrThrow<StringValue>('ACCESS_TOKEN_LIFETIME')
@@ -88,6 +94,54 @@ export class AuthService {
   }
 
   async refresh(oldRefreshToken: string): Promise<AuthResponseInDto> {
+    const tokenHash = this.refreshTokenService.getTokenHash(oldRefreshToken);
+
+    const LOCK_KEY = `refresh:lock:${tokenHash}`;
+    const LOCK_TTL_MS = 5000;
+    const RESULT_KEY = `refresh:result:${tokenHash}`;
+    const RESULT_TTL_MS = 15000;
+    const RETRY_DELAY_MS = 200;
+    const MAX_RETRIES = 20;
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const cachedResult = await this.redis.get(RESULT_KEY);
+
+      if (cachedResult) {
+        return SuperJSON.parse<AuthResponseInDto>(cachedResult);
+      }
+
+      const acquired = await this.redis.set(
+        LOCK_KEY,
+        '1',
+        'PX',
+        LOCK_TTL_MS,
+        'NX'
+      );
+
+      if (acquired === 'OK') {
+        try {
+          const result = await this.performRefresh(oldRefreshToken);
+          await this.redis.set(
+            RESULT_KEY,
+            SuperJSON.stringify(result),
+            'PX',
+            RESULT_TTL_MS
+          );
+          return result;
+        } finally {
+          await this.redis.del(LOCK_KEY);
+        }
+      }
+
+      await setTimeout(RETRY_DELAY_MS);
+    }
+
+    throw new UnauthorizedException('Failed to refresh');
+  }
+
+  private async performRefresh(
+    oldRefreshToken: string
+  ): Promise<AuthResponseInDto> {
     try {
       const [refreshToken, { userId, expiresAt: refreshTokenExpiresAt }] =
         await this.refreshTokenService.rotate(oldRefreshToken);

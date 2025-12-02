@@ -21,8 +21,14 @@ export class UserCacheService {
   }
 
   async get(id: string): Promise<User | null> {
-    const user = await this.redis.get(this.getKey(id));
+    const userString = await this.redis.get(this.getKey(id));
+    const user = userString ? (JSON.parse(userString) as User) : null;
 
-    return user ? (JSON.parse(user) as User) : null;
+    if (user) {
+      user.createdAt = new Date(user.createdAt);
+      user.updatedAt = new Date(user.updatedAt);
+    }
+
+    return user;
   }
 }

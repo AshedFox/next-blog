@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { Redis } from 'ioredis';
+import SuperJSON from 'superjson';
 
 import { InjectRedis } from '@/redis/redis.decorator';
 
@@ -17,18 +18,12 @@ export class UserCacheService {
   }
 
   async set(id: string, user: User, ttl: number = 60): Promise<void> {
-    await this.redis.set(this.getKey(id), JSON.stringify(user), 'EX', ttl);
+    await this.redis.set(this.getKey(id), SuperJSON.stringify(user), 'EX', ttl);
   }
 
   async get(id: string): Promise<User | null> {
-    const userString = await this.redis.get(this.getKey(id));
-    const user = userString ? (JSON.parse(userString) as User) : null;
+    const user = await this.redis.get(this.getKey(id));
 
-    if (user) {
-      user.createdAt = new Date(user.createdAt);
-      user.updatedAt = new Date(user.updatedAt);
-    }
-
-    return user;
+    return user ? SuperJSON.parse<User>(user) : null;
   }
 }

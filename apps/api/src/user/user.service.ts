@@ -85,7 +85,7 @@ export class UserService {
       }
     }
 
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id },
       include:
         include.length > 0
@@ -95,6 +95,12 @@ export class UserService {
             }, {} as Prisma.UserInclude)
           : undefined,
     });
+
+    if (user) {
+      await this.cache.set(id, user);
+    }
+
+    return user;
   }
 
   async getOneById(

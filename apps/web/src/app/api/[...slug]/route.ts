@@ -69,13 +69,13 @@ async function proxyRequest(
   });
 
   if (tokenToUse) {
-    headers.set('Authorization', `Bearer ${tokenToUse}`);
+    headers.set('authorization', `Bearer ${tokenToUse}`);
   }
 
   const clientIp = request.headers.get('x-forwarded-for');
 
   if (clientIp) {
-    headers.set('X-Forwarded-For', clientIp);
+    headers.set('x-forwarded-for', clientIp);
   }
 
   let body: BodyInit | null = null;

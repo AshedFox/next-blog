@@ -23,4 +23,5 @@ export const fileSchema = z.object({
   createdAt: datetimeOutSchema,
   updatedAt: datetimeOutSchema,
   deletedAt: datetimeOutSchema.nullish(),
+  url: z.url(),
 });

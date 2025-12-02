@@ -24,7 +24,7 @@ export const UserProvider = ({ user, children }: Props) => {
     queryKey: ['user', user.id],
     queryFn: () => clientApi.getOrThrow<UserDto>(`/api/users/me`),
     initialData: user,
-    refetchInterval: 60 * 1000,
+    staleTime: 60 * 1000,
   });
   const router = useRouter();
 

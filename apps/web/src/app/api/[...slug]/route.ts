@@ -87,28 +87,14 @@ async function proxyRequest(
       duplex: 'half',
     });
 
-    const responseHeaders = new Headers();
-
-    backendResponse.headers.forEach((value, key) => {
-      if (
-        ![
-          'set-cookie',
-          'content-encoding',
-          'transfer-encoding',
-          'connection',
-        ].includes(key.toLowerCase())
-      ) {
-        responseHeaders.set(key, value);
-      }
-    });
-
-    const responseBody = await backendResponse.arrayBuffer();
-
-    const response = new NextResponse(responseBody, {
+    const response = new NextResponse(backendResponse.body, {
       status: backendResponse.status,
       statusText: backendResponse.statusText,
-      headers: responseHeaders,
+      headers: backendResponse.headers,
     });
+
+    response.headers.delete('content-encoding');
+    response.headers.delete('content-length');
 
     if (refreshResult) {
       setAccessToken(

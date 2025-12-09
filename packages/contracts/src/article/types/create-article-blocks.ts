@@ -1,8 +1,12 @@
 import z from 'zod';
 
 import {
+  createArticleBlockSchema,
   createArticleCodeBlockSchema,
+  createArticleDividerBlockSchema,
+  createArticleHeadingBlockSchema,
   createArticleImageBlockSchema,
+  createArticleListBlockSchema,
   createArticleParagraphBlockSchema,
   createArticleQuoteBlockSchema,
   createArticleVideoBlockSchema,
@@ -20,9 +24,14 @@ export type CreateCodeBlockDto = z.infer<typeof createArticleCodeBlockSchema>;
 
 export type CreateQuoteBlockDto = z.infer<typeof createArticleQuoteBlockSchema>;
 
-export type CreateArticleBlockDto =
-  | CreateParagraphBlockDto
-  | CreateImageBlockDto
-  | CreateVideoBlockDto
-  | CreateCodeBlockDto
-  | CreateQuoteBlockDto;
+export type CreateHeadingBlockDto = z.infer<
+  typeof createArticleHeadingBlockSchema
+>;
+
+export type CreateDividerBlockDto = z.infer<
+  typeof createArticleDividerBlockSchema
+>;
+
+export type CreateListBlockDto = z.infer<typeof createArticleListBlockSchema>;
+
+export type CreateArticleBlockDto = z.infer<typeof createArticleBlockSchema>;

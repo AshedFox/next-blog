@@ -1,7 +1,11 @@
 import z from 'zod';
 
 import {
+  articleBlockSchema,
+  articleDividerBlockSchema,
+  articleHeadingBlockSchema,
   articleImageBlockSchema,
+  articleListBlockSchema,
   articleParagraphBlockSchema,
   articleQuoteBlockSchema,
   articleVideoBlockSchema,
@@ -17,9 +21,10 @@ export type CodeBlockDto = z.infer<typeof articleVideoBlockSchema>;
 
 export type QuoteBlockDto = z.infer<typeof articleQuoteBlockSchema>;
 
-export type ArticleBlockDto =
-  | ParagraphBlockDto
-  | ImageBlockDto
-  | VideoBlockDto
-  | CodeBlockDto
-  | QuoteBlockDto;
+export type HeadingBlockDto = z.infer<typeof articleHeadingBlockSchema>;
+
+export type DividerBlockDto = z.infer<typeof articleDividerBlockSchema>;
+
+export type ListBlockDto = z.infer<typeof articleListBlockSchema>;
+
+export type ArticleBlockDto = z.infer<typeof articleBlockSchema>;

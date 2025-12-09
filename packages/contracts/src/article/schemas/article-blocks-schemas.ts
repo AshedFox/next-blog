@@ -2,6 +2,7 @@ import z from 'zod';
 
 import {
   ArticleBlockType,
+  ArticleListStyle,
   CODE_LANGUAGE_VALUES,
   VideoProvider,
 } from '../enums';
@@ -47,6 +48,12 @@ export const articleDividerBlockSchema = z.object({
   type: z.literal(ArticleBlockType.DIVIDER),
 });
 
+export const articleListBlockSchema = z.object({
+  type: z.literal(ArticleBlockType.LIST),
+  style: z.enum(ArticleListStyle),
+  items: z.array(z.string()),
+});
+
 export const articleBlockSchema = z.discriminatedUnion('type', [
   articleParagraphBlockSchema,
   articleImageBlockSchema,
@@ -55,4 +62,5 @@ export const articleBlockSchema = z.discriminatedUnion('type', [
   articleQuoteBlockSchema,
   articleHeadingBlockSchema,
   articleDividerBlockSchema,
+  articleListBlockSchema,
 ]);

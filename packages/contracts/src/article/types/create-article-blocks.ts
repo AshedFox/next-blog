@@ -6,6 +6,7 @@ import {
   createArticleDividerBlockSchema,
   createArticleHeadingBlockSchema,
   createArticleImageBlockSchema,
+  createArticleListBlockSchema,
   createArticleParagraphBlockSchema,
   createArticleQuoteBlockSchema,
   createArticleVideoBlockSchema,
@@ -30,4 +31,7 @@ export type CreateHeadingBlockDto = z.infer<
 export type CreateDividerBlockDto = z.infer<
   typeof createArticleDividerBlockSchema
 >;
+
+export type CreateListBlockDto = z.infer<typeof createArticleListBlockSchema>;
+
 export type CreateArticleBlockDto = z.infer<typeof createArticleBlockSchema>;

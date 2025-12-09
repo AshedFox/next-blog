@@ -5,6 +5,7 @@ import {
   articleDividerBlockSchema,
   articleHeadingBlockSchema,
   articleImageBlockSchema,
+  articleListBlockSchema,
   articleParagraphBlockSchema,
   articleQuoteBlockSchema,
   articleVideoBlockSchema,
@@ -23,4 +24,7 @@ export type QuoteBlockDto = z.infer<typeof articleQuoteBlockSchema>;
 export type HeadingBlockDto = z.infer<typeof articleHeadingBlockSchema>;
 
 export type DividerBlockDto = z.infer<typeof articleDividerBlockSchema>;
+
+export type ListBlockDto = z.infer<typeof articleListBlockSchema>;
+
 export type ArticleBlockDto = z.infer<typeof articleBlockSchema>;

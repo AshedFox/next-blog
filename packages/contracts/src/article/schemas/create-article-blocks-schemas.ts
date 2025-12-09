@@ -3,6 +3,8 @@ import z from 'zod';
 import {
   CODE_CONTENT_MAX_LENGTH,
   HEADING_CONTENT_MAX_LENGTH,
+  LIST_ITEM_MAX_LENGTH,
+  LIST_MAX_ITEMS,
   PARAGRAPH_CONTENT_MAX_LENGTH,
 } from '../constants';
 import {
@@ -10,6 +12,7 @@ import {
   articleDividerBlockSchema,
   articleHeadingBlockSchema,
   articleImageBlockSchema,
+  articleListBlockSchema,
   articleParagraphBlockSchema,
   articleQuoteBlockSchema,
   articleVideoBlockSchema,
@@ -54,6 +57,13 @@ export const createArticleHeadingBlockSchema = articleHeadingBlockSchema.extend(
 
 export const createArticleDividerBlockSchema = articleDividerBlockSchema;
 
+export const createArticleListBlockSchema = articleListBlockSchema.extend({
+  items: z
+    .array(z.string().min(1).max(LIST_ITEM_MAX_LENGTH))
+    .min(1)
+    .max(LIST_MAX_ITEMS),
+});
+
 export const createArticleBlockSchema = z.discriminatedUnion('type', [
   createArticleParagraphBlockSchema,
   createArticleImageBlockSchema,
@@ -62,4 +72,5 @@ export const createArticleBlockSchema = z.discriminatedUnion('type', [
   createArticleQuoteBlockSchema,
   createArticleHeadingBlockSchema,
   createArticleDividerBlockSchema,
+  createArticleListBlockSchema,
 ]);

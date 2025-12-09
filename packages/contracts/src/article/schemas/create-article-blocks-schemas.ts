@@ -7,6 +7,7 @@ import {
 } from '../constants';
 import {
   articleCodeBlockSchema,
+  articleDividerBlockSchema,
   articleHeadingBlockSchema,
   articleImageBlockSchema,
   articleParagraphBlockSchema,
@@ -51,6 +52,8 @@ export const createArticleHeadingBlockSchema = articleHeadingBlockSchema.extend(
   }
 );
 
+export const createArticleDividerBlockSchema = articleDividerBlockSchema;
+
 export const createArticleBlockSchema = z.discriminatedUnion('type', [
   createArticleParagraphBlockSchema,
   createArticleImageBlockSchema,
@@ -58,4 +61,5 @@ export const createArticleBlockSchema = z.discriminatedUnion('type', [
   createArticleCodeBlockSchema,
   createArticleQuoteBlockSchema,
   createArticleHeadingBlockSchema,
+  createArticleDividerBlockSchema,
 ]);

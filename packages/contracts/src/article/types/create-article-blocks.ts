@@ -3,6 +3,7 @@ import z from 'zod';
 import {
   createArticleBlockSchema,
   createArticleCodeBlockSchema,
+  createArticleDividerBlockSchema,
   createArticleHeadingBlockSchema,
   createArticleImageBlockSchema,
   createArticleParagraphBlockSchema,
@@ -24,5 +25,9 @@ export type CreateQuoteBlockDto = z.infer<typeof createArticleQuoteBlockSchema>;
 
 export type CreateHeadingBlockDto = z.infer<
   typeof createArticleHeadingBlockSchema
+>;
+
+export type CreateDividerBlockDto = z.infer<
+  typeof createArticleDividerBlockSchema
 >;
 export type CreateArticleBlockDto = z.infer<typeof createArticleBlockSchema>;

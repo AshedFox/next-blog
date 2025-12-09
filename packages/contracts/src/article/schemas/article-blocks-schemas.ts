@@ -43,6 +43,10 @@ export const articleHeadingBlockSchema = z.object({
   level: z.number(),
 });
 
+export const articleDividerBlockSchema = z.object({
+  type: z.literal(ArticleBlockType.DIVIDER),
+});
+
 export const articleBlockSchema = z.discriminatedUnion('type', [
   articleParagraphBlockSchema,
   articleImageBlockSchema,
@@ -50,4 +54,5 @@ export const articleBlockSchema = z.discriminatedUnion('type', [
   articleCodeBlockSchema,
   articleQuoteBlockSchema,
   articleHeadingBlockSchema,
+  articleDividerBlockSchema,
 ]);

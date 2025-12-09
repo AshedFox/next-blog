@@ -4,3 +4,4 @@ export const QUOTE_CONTENT_MAX_LENGTH = 1000;
 export const HEADING_CONTENT_MAX_LENGTH = 200;
 export const LIST_ITEM_MAX_LENGTH = 2000;
 export const LIST_MAX_ITEMS = 100;
+export const MAX_BLOCKS = 500;

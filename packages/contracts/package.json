@@ -19,13 +19,13 @@
     "dev": "rimraf dist & tsc --watch"
   },
   "dependencies": {
-    "zod": "^4.1.12"
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "eslint": "^9.38.0",
-    "rimraf": "^6.1.0",
+    "eslint": "^9.39.1",
+    "rimraf": "^6.1.2",
     "typescript": "^5.9.3"
   },
   "lint-staged": {

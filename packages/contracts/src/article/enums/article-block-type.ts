@@ -4,6 +4,9 @@ export const ArticleBlockType = {
   VIDEO: 'VIDEO',
   CODE: 'CODE',
   QUOTE: 'QUOTE',
+  HEADING: 'HEADING',
+  LIST: 'LIST',
+  DIVIDER: 'DIVIDER',
 } as const;
 
 export type ArticleBlockType =

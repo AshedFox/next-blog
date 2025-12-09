@@ -1,6 +1,10 @@
 import z from 'zod';
 
 import {
+  CODE_CONTENT_MAX_LENGTH,
+  PARAGRAPH_CONTENT_MAX_LENGTH,
+} from '../constants';
+import {
   articleCodeBlockSchema,
   articleImageBlockSchema,
   articleParagraphBlockSchema,
@@ -8,19 +12,36 @@ import {
   articleVideoBlockSchema,
 } from './article-blocks-schemas';
 
-export const createArticleParagraphBlockSchema = articleParagraphBlockSchema;
+export const createArticleParagraphBlockSchema =
+  articleParagraphBlockSchema.extend({
+    title: z.string().min(1).max(120),
+    content: z.string().min(2).max(PARAGRAPH_CONTENT_MAX_LENGTH),
+  });
 
-export const createArticleImageBlockSchema = articleImageBlockSchema.omit({
-  url: true,
+export const createArticleImageBlockSchema = articleImageBlockSchema
+  .extend({
+    alt: z.string().min(1).max(100).optional(),
+  })
+  .omit({
+    url: true,
+  });
+
+export const createArticleVideoBlockSchema = articleVideoBlockSchema
+  .extend({
+    videoId: z.string().min(1),
+  })
+  .omit({
+    embedUrl: true,
+  });
+
+export const createArticleCodeBlockSchema = articleCodeBlockSchema.extend({
+  content: z.string().min(2).max(CODE_CONTENT_MAX_LENGTH),
 });
 
-export const createArticleVideoBlockSchema = articleVideoBlockSchema.omit({
-  embedUrl: true,
+export const createArticleQuoteBlockSchema = articleQuoteBlockSchema.extend({
+  content: z.string().min(2).max(CODE_CONTENT_MAX_LENGTH),
+  author: z.string().min(1).max(100).optional(),
 });
-
-export const createArticleCodeBlockSchema = articleCodeBlockSchema;
-
-export const createArticleQuoteBlockSchema = articleQuoteBlockSchema;
 
 export const createArticleBlockSchema = z.discriminatedUnion('type', [
   createArticleParagraphBlockSchema,

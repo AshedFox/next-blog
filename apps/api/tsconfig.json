@@ -4,7 +4,10 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@prisma/client": ["./src/prisma/generated/client.ts"],
+      "@prisma/models": ["./src/prisma/generated/models.ts"],
+      "@prisma/common-input": ["./src/prisma/generated/commonInputTypes.ts"]
     }
   }
 }

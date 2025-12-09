@@ -1,7 +1,7 @@
 import z from 'zod';
 
 export const paginatedMetaDefaultSchema = z.object({
-  limit: z.number().min(1).max(100),
+  limit: z.number(),
   hasNextPage: z.boolean(),
 });
 
@@ -10,9 +10,9 @@ export const paginatedMetaCursorSchema = paginatedMetaDefaultSchema.extend({
 });
 
 export const paginatedMetaOffsetSchema = paginatedMetaDefaultSchema.extend({
-  totalCount: z.number().min(0),
-  page: z.number().min(1),
-  totalPages: z.number().min(0),
+  totalCount: z.number(),
+  page: z.number(),
+  totalPages: z.number(),
   hasPreviousPage: z.boolean(),
 });
 

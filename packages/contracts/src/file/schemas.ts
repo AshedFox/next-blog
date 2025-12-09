@@ -16,10 +16,10 @@ export const initUploadSchema = z.object({
 
 export const fileSchema = z.object({
   id: z.uuid(),
-  name: z.string().min(2).max(200),
+  name: z.string(),
   status: z.enum(FileStatus),
   mimetype: z.string(),
-  size: z.number().min(1).max(10_485_760),
+  size: z.number(),
   createdAt: datetimeOutSchema,
   updatedAt: datetimeOutSchema,
   deletedAt: datetimeOutSchema.nullish(),

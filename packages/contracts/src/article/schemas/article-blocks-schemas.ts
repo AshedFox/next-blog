@@ -1,11 +1,6 @@
 import z from 'zod';
 
 import {
-  CODE_CONTENT_MAX_LENGTH,
-  PARAGRAPH_CONTENT_MAX_LENGTH,
-  QUOTE_CONTENT_MAX_LENGTH,
-} from '../constants';
-import {
   ArticleBlockType,
   CODE_LANGUAGE_VALUES,
   VideoProvider,
@@ -13,34 +8,34 @@ import {
 
 export const articleParagraphBlockSchema = z.object({
   type: z.literal(ArticleBlockType.PARAGRAPH),
-  title: z.string().min(2).max(120),
-  content: z.string().min(2).max(PARAGRAPH_CONTENT_MAX_LENGTH),
+  title: z.string(),
+  content: z.string(),
 });
 
 export const articleImageBlockSchema = z.object({
   type: z.literal(ArticleBlockType.IMAGE),
   fileId: z.uuid(),
   url: z.url(),
-  alt: z.string().min(1).max(100).optional(),
+  alt: z.string().optional(),
 });
 
 export const articleVideoBlockSchema = z.object({
   type: z.literal(ArticleBlockType.VIDEO),
   provider: z.enum(VideoProvider),
-  videoId: z.string().min(1),
+  videoId: z.string(),
   embedUrl: z.url(),
 });
 
 export const articleCodeBlockSchema = z.object({
   type: z.literal(ArticleBlockType.CODE),
-  content: z.string().min(2).max(CODE_CONTENT_MAX_LENGTH),
+  content: z.string(),
   language: z.enum(CODE_LANGUAGE_VALUES).optional(),
 });
 
 export const articleQuoteBlockSchema = z.object({
   type: z.literal(ArticleBlockType.QUOTE),
-  content: z.string().min(2).max(QUOTE_CONTENT_MAX_LENGTH),
-  author: z.string().min(1).max(100).optional(),
+  content: z.string(),
+  author: z.string().optional(),
 });
 
 export const articleBlockSchema = z.discriminatedUnion('type', [

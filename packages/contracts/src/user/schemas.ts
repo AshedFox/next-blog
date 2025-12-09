@@ -25,8 +25,8 @@ export const updateUserSchema = z.object({
 export const baseUserSchema = z.object({
   id: z.uuid(),
   email: z.email().trim(),
-  username: z.string().min(2).max(60),
-  name: z.string().min(2).max(120),
+  username: z.string(),
+  name: z.string(),
   role: z.enum(UserRole),
   status: z.enum(UserStatus),
   createdAt: datetimeOutSchema,

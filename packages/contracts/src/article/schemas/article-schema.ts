@@ -8,14 +8,14 @@ import { articleBlockSchema } from './article-blocks-schemas';
 
 export const baseArticleSchema = z.object({
   id: z.uuid(),
-  slug: z.string().min(2).max(120),
-  title: z.string().min(2).max(120),
+  slug: z.string(),
+  title: z.string(),
   status: z.enum(ArticleStatus),
   createdAt: datetimeOutSchema,
   updatedAt: datetimeOutSchema,
   deletedAt: datetimeOutSchema.nullish(),
   authorId: z.uuid(),
-  blocks: z.array(articleBlockSchema).max(20),
+  blocks: z.array(articleBlockSchema),
 });
 
 export const articleSchema = baseArticleSchema.extend({

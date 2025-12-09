@@ -8,7 +8,6 @@ import {
 
 export const articleParagraphBlockSchema = z.object({
   type: z.literal(ArticleBlockType.PARAGRAPH),
-  title: z.string(),
   content: z.string(),
 });
 
@@ -38,10 +37,17 @@ export const articleQuoteBlockSchema = z.object({
   author: z.string().optional(),
 });
 
+export const articleHeadingBlockSchema = z.object({
+  type: z.literal(ArticleBlockType.HEADING),
+  content: z.string(),
+  level: z.number(),
+});
+
 export const articleBlockSchema = z.discriminatedUnion('type', [
   articleParagraphBlockSchema,
   articleImageBlockSchema,
   articleVideoBlockSchema,
   articleCodeBlockSchema,
   articleQuoteBlockSchema,
+  articleHeadingBlockSchema,
 ]);

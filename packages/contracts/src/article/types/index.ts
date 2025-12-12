@@ -3,6 +3,7 @@ export * from './article-blocks';
 export * from './article-filters';
 export * from './article-search';
 export * from './article-search-response';
+export * from './article-segments';
 export * from './article-sort';
 export * from './create-article';
 export * from './create-article-blocks';

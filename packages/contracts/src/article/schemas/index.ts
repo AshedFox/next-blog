@@ -4,6 +4,7 @@ export * from './article-include-schema';
 export * from './article-schema';
 export * from './article-search-response-schema';
 export * from './article-search-schema';
+export * from './article-segments-schemas';
 export * from './article-sort-schema';
 export * from './create-article-blocks-schemas';
 export * from './create-article-schema';

@@ -6,10 +6,11 @@ import {
   CODE_LANGUAGE_VALUES,
   VideoProvider,
 } from '../enums';
+import { articleSegmentSchema } from './article-segments-schemas';
 
 export const articleParagraphBlockSchema = z.object({
   type: z.literal(ArticleBlockType.PARAGRAPH),
-  content: z.string(),
+  content: z.array(articleSegmentSchema),
 });
 
 export const articleImageBlockSchema = z.object({
@@ -34,13 +35,13 @@ export const articleCodeBlockSchema = z.object({
 
 export const articleQuoteBlockSchema = z.object({
   type: z.literal(ArticleBlockType.QUOTE),
-  content: z.string(),
+  content: z.array(articleSegmentSchema),
   author: z.string().optional(),
 });
 
 export const articleHeadingBlockSchema = z.object({
   type: z.literal(ArticleBlockType.HEADING),
-  content: z.string(),
+  content: z.array(articleSegmentSchema),
   level: z.number(),
 });
 
@@ -51,7 +52,7 @@ export const articleDividerBlockSchema = z.object({
 export const articleListBlockSchema = z.object({
   type: z.literal(ArticleBlockType.LIST),
   style: z.enum(ArticleListStyle),
-  items: z.array(z.string()),
+  items: z.array(articleParagraphBlockSchema),
 });
 
 export const articleBlockSchema = z.discriminatedUnion('type', [

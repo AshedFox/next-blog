@@ -3,10 +3,13 @@ import z from 'zod';
 import {
   CODE_CONTENT_MAX_LENGTH,
   HEADING_CONTENT_MAX_LENGTH,
-  LIST_ITEM_MAX_LENGTH,
-  LIST_MAX_ITEMS,
+  MAX_LIST_ITEMS,
+  MAX_SEGMENTS_PER_BLOCK,
   PARAGRAPH_CONTENT_MAX_LENGTH,
+  QUOTE_CONTENT_MAX_LENGTH,
 } from '../constants';
+import { ArticleSegmentType } from '../enums/article-segment-type';
+import { ArticleSegment } from '../types/article-segments';
 import {
   articleCodeBlockSchema,
   articleDividerBlockSchema,
@@ -17,10 +20,27 @@ import {
   articleQuoteBlockSchema,
   articleVideoBlockSchema,
 } from './article-blocks-schemas';
+import { articleSegmentSchema } from './article-segments-schemas';
+
+function checkContentLength(value: ArticleSegment[], maxLength: number) {
+  return (
+    value.reduce((totalLength, segment) => {
+      if (segment.type === ArticleSegmentType.TEXT) {
+        totalLength += segment.text.length;
+      }
+      return totalLength;
+    }, 0) <= maxLength
+  );
+}
 
 export const createArticleParagraphBlockSchema =
   articleParagraphBlockSchema.extend({
-    content: z.string().min(2).max(PARAGRAPH_CONTENT_MAX_LENGTH),
+    content: z
+      .array(articleSegmentSchema)
+      .max(MAX_SEGMENTS_PER_BLOCK)
+      .refine((value) => {
+        return checkContentLength(value, PARAGRAPH_CONTENT_MAX_LENGTH);
+      }),
   });
 
 export const createArticleImageBlockSchema = articleImageBlockSchema
@@ -44,13 +64,23 @@ export const createArticleCodeBlockSchema = articleCodeBlockSchema.extend({
 });
 
 export const createArticleQuoteBlockSchema = articleQuoteBlockSchema.extend({
-  content: z.string().min(2).max(CODE_CONTENT_MAX_LENGTH),
+  content: z
+    .array(articleSegmentSchema)
+    .max(MAX_SEGMENTS_PER_BLOCK)
+    .refine((value) => {
+      return checkContentLength(value, QUOTE_CONTENT_MAX_LENGTH);
+    }),
   author: z.string().min(1).max(100).optional(),
 });
 
 export const createArticleHeadingBlockSchema = articleHeadingBlockSchema.extend(
   {
-    content: z.string().min(1).max(HEADING_CONTENT_MAX_LENGTH),
+    content: z
+      .array(articleSegmentSchema)
+      .max(MAX_SEGMENTS_PER_BLOCK)
+      .refine((value) => {
+        return checkContentLength(value, HEADING_CONTENT_MAX_LENGTH);
+      }),
     level: z.number().min(2).max(4),
   }
 );
@@ -58,10 +88,7 @@ export const createArticleHeadingBlockSchema = articleHeadingBlockSchema.extend(
 export const createArticleDividerBlockSchema = articleDividerBlockSchema;
 
 export const createArticleListBlockSchema = articleListBlockSchema.extend({
-  items: z
-    .array(z.string().min(1).max(LIST_ITEM_MAX_LENGTH))
-    .min(1)
-    .max(LIST_MAX_ITEMS),
+  items: z.array(createArticleParagraphBlockSchema).max(MAX_LIST_ITEMS),
 });
 
 export const createArticleBlockSchema = z.discriminatedUnion('type', [

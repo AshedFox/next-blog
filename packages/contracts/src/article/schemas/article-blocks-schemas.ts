@@ -1,11 +1,6 @@
 import z from 'zod';
 
-import {
-  ArticleBlockType,
-  ArticleListStyle,
-  CODE_LANGUAGE_VALUES,
-  VideoProvider,
-} from '../enums';
+import { ArticleBlockType, ArticleListStyle, VideoProvider } from '../enums';
 import { articleSegmentSchema } from './article-segments-schemas';
 
 export const articleParagraphBlockSchema = z.object({
@@ -30,7 +25,7 @@ export const articleVideoBlockSchema = z.object({
 export const articleCodeBlockSchema = z.object({
   type: z.literal(ArticleBlockType.CODE),
   content: z.string(),
-  language: z.enum(CODE_LANGUAGE_VALUES).optional(),
+  language: z.string().optional(),
 });
 
 export const articleQuoteBlockSchema = z.object({

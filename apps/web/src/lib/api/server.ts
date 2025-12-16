@@ -8,7 +8,7 @@ import { clientEnv } from '../env/client';
 import { ApiFetchResult } from './types';
 
 type FetchOptions = RequestInit & {
-  requireAuth?: boolean;
+  withAuth?: boolean | string;
 };
 
 export async function apiFetch<T = unknown>(
@@ -16,13 +16,18 @@ export async function apiFetch<T = unknown>(
   options: FetchOptions = {}
 ): Promise<ApiFetchResult<T>> {
   try {
-    const { requireAuth, ...init } = options;
+    const { withAuth, ...init } = options;
 
     const headers = new Headers(init.headers);
     headers.set('Content-Type', 'application/json');
 
-    if (requireAuth) {
-      const accessToken = await getAccessToken(await cookies());
+    if (withAuth) {
+      let accessToken: string | undefined;
+      if (typeof withAuth === 'string') {
+        accessToken = withAuth;
+      } else {
+        accessToken = await getAccessToken(await cookies());
+      }
 
       if (accessToken) {
         headers.set('Authorization', `Bearer ${accessToken}`);
@@ -68,88 +73,97 @@ export async function apiFetchOrThrow<T = unknown>(
 }
 
 export const serverApi = {
-  get<T = unknown>(path: string, requireAuth: boolean = false) {
-    return apiFetch<T>(path, { requireAuth });
+  get<T = unknown>(path: string, withAuth: FetchOptions['withAuth'] = false) {
+    return apiFetch<T>(path, { withAuth });
   },
-  getOrThrow<T = unknown>(path: string, requireAuth: boolean = false) {
-    return apiFetchOrThrow<T>(path, { requireAuth });
+  getOrThrow<T = unknown>(
+    path: string,
+    withAuth: FetchOptions['withAuth'] = false
+  ) {
+    return apiFetchOrThrow<T>(path, { withAuth });
   },
   post<T = unknown, D = unknown>(
     path: string,
     data: D,
-    requireAuth: boolean = false
+    withAuth: FetchOptions['withAuth'] = false
   ) {
     return apiFetch<T>(path, {
       method: 'POST',
       body: JSON.stringify(data),
-      requireAuth,
+      withAuth,
     });
   },
   postOrThrow<T = unknown, D = unknown>(
     path: string,
     data: D,
-    requireAuth: boolean = false
+    withAuth: FetchOptions['withAuth'] = false
   ) {
     return apiFetchOrThrow<T>(path, {
       method: 'POST',
       body: JSON.stringify(data),
-      requireAuth,
+      withAuth,
     });
   },
   put<T = unknown, D = unknown>(
     path: string,
     data: D,
-    requireAuth: boolean = false
+    withAuth: FetchOptions['withAuth'] = false
   ) {
     return apiFetch<T>(path, {
       method: 'PUT',
       body: JSON.stringify(data),
-      requireAuth,
+      withAuth,
     });
   },
   putOrThrow<T = unknown, D = unknown>(
     path: string,
     data: D,
-    requireAuth: boolean = false
+    withAuth: FetchOptions['withAuth'] = false
   ) {
     return apiFetchOrThrow<T>(path, {
       method: 'PUT',
       body: JSON.stringify(data),
-      requireAuth,
+      withAuth,
     });
   },
   patch<T = unknown, D = unknown>(
     path: string,
     data: D,
-    requireAuth: boolean = false
+    withAuth: FetchOptions['withAuth'] = false
   ) {
     return apiFetch<T>(path, {
       method: 'PATCH',
       body: JSON.stringify(data),
-      requireAuth,
+      withAuth,
     });
   },
   patchOrThrow<T = unknown, D = unknown>(
     path: string,
     data: D,
-    requireAuth: boolean = false
+    withAuth: FetchOptions['withAuth'] = false
   ) {
     return apiFetchOrThrow<T>(path, {
       method: 'PATCH',
       body: JSON.stringify(data),
-      requireAuth,
+      withAuth,
     });
   },
-  delete<T = unknown>(path: string, requireAuth: boolean = false) {
+  delete<T = unknown>(
+    path: string,
+    withAuth: FetchOptions['withAuth'] = false
+  ) {
     return apiFetch<T>(path, {
       method: 'DELETE',
-      requireAuth,
+      withAuth,
     });
   },
-  deleteOrThrow<T = unknown>(path: string, requireAuth: boolean = false) {
+  deleteOrThrow<T = unknown>(
+    path: string,
+    withAuth: FetchOptions['withAuth'] = false
+  ) {
     return apiFetchOrThrow<T>(path, {
       method: 'DELETE',
-      requireAuth,
+      withAuth,
     });
   },
 };

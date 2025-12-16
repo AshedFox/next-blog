@@ -3,19 +3,19 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { authServerApi } from '../api/server';
 import {
   clearAccessToken,
   clearRefreshToken,
   getRefreshToken,
 } from '../domain/tokens';
+import { logout } from '../server';
 
 export async function logout() {
   const cookieStore = await cookies();
   const refreshToken = await getRefreshToken(cookieStore);
 
   if (refreshToken) {
-    await authServerApi.logout(refreshToken);
+    await logout(refreshToken);
   }
 
   clearAccessToken(cookieStore);

@@ -2,10 +2,10 @@ import { AuthResponseDto } from '@workspace/contracts';
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
-  authServerApi,
   checkAccessToken,
   getAccessToken,
   getRefreshToken,
+  refresh,
   setAccessToken,
   setRefreshToken,
 } from '@/features/auth/server';
@@ -41,7 +41,7 @@ async function proxyRequest(
     : {};
 
   if ((!accessToken || !isValid || needsRefresh) && refreshToken) {
-    const { data } = await authServerApi.refresh(refreshToken);
+    const { data } = await refresh(refreshToken);
 
     if (data) {
       refreshResult = data;

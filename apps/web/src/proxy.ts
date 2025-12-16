@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import {
-  authServerApi,
   checkAccessToken,
   clearRefreshToken,
+  refresh,
   setAccessToken,
   setRefreshToken,
 } from './features/auth/server';
@@ -30,7 +30,7 @@ export async function proxy(req: NextRequest) {
     : {};
 
   if ((!accessToken || !isValid || needsRefresh) && refreshToken) {
-    const { data, error } = await authServerApi.refresh(refreshToken);
+    const { data, error } = await refresh(refreshToken);
 
     const res = error
       ? isProtected

@@ -4,11 +4,11 @@ import { SignUpDto } from '@workspace/contracts';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { authServerApi } from '../api/server';
 import { setAccessToken, setRefreshToken } from '../domain/tokens';
+import { signUp } from '../server';
 
-export async function signUp(input: SignUpDto) {
-  const { data, error } = await authServerApi.signUp(input);
+export async function signUpAction(input: SignUpDto) {
+  const { data, error } = await signUp(input);
 
   if (error) {
     return { message: error.message };

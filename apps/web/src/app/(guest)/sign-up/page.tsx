@@ -8,8 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  'use cache';
-
   return (
     <div className="grow flex items-center justify-center from-primary/20 to-card bg-linear-115">
       <div className="w-full max-w-md">

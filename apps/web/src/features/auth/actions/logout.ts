@@ -10,7 +10,7 @@ import {
 } from '../domain/tokens';
 import { logout } from '../server';
 
-export async function logout() {
+export async function logoutAction() {
   const cookieStore = await cookies();
   const refreshToken = await getRefreshToken(cookieStore);
 

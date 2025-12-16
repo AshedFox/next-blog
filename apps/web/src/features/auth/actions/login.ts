@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 import { setAccessToken, setRefreshToken } from '../domain/tokens';
 import { login } from '../server';
 
-export async function login(input: LoginDto) {
+export async function loginAction(input: LoginDto) {
   const { data, error } = await login(input);
 
   if (error) {

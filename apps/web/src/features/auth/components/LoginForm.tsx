@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 
 import Spinner from '@/shared/components/Spinner';
 
-import { login } from '../actions/login';
+import { loginAction } from '../actions/login';
 
 export const LoginForm = () => {
   const form = useForm<LoginDto>({
@@ -37,7 +37,7 @@ export const LoginForm = () => {
   });
 
   const onSubmit = async (data: LoginDto) => {
-    const { message } = await login(data);
+    const { message } = await loginAction(data);
 
     if (message) {
       toast.error('Login failed', {

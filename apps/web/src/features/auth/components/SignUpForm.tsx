@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 
 import Spinner from '@/shared/components/Spinner';
 
-import { signUp } from '../actions/sign-up';
+import { signUpAction } from '../actions/sign-up';
 
 export const SignUpForm = () => {
   const form = useForm<SignUpDto>({
@@ -38,7 +38,7 @@ export const SignUpForm = () => {
   });
 
   const onSubmit = async (data: SignUpDto) => {
-    const { message } = await signUp(data);
+    const { message } = await signUpAction(data);
 
     if (message) {
       toast.error('Sign up failed', {

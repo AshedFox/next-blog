@@ -14,6 +14,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-virtual": "^3.13.13",
     "@tiptap/react": "^3.13.0",
     "@workspace/contracts": "workspace:*",
     "@workspace/ui": "workspace:*",

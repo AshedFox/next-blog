@@ -12,8 +12,6 @@ type Props = {
 
 const ToolbarButton = memo(
   ({ isActive, disabled, onClick, children }: Props) => {
-    console.log('rerender toolbar button :)');
-
     return (
       <Button
         variant={isActive ? 'secondary' : 'ghost'}

@@ -1,0 +1,15 @@
+import { ArticleWithRelationsDto } from '@workspace/contracts';
+import { cacheTag } from 'next/cache';
+
+import { ApiFetchResult } from '@/lib/api/types';
+
+import { fetchArticle } from './server-transport';
+
+export async function getArticle(
+  slugOrId: string
+): Promise<ApiFetchResult<ArticleWithRelationsDto<['author']>>> {
+  'use cache';
+  cacheTag(`articles-${slugOrId}`);
+
+  return fetchArticle(slugOrId, ['author']);
+}

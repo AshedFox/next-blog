@@ -1,3 +1,5 @@
+'use client';
+
 import { UserDto } from '@workspace/contracts';
 import { createContext, ReactNode } from 'react';
 

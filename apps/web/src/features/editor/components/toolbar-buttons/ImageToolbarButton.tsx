@@ -46,7 +46,7 @@ export const ImageToolbarButton = ({ editor }: Props) => {
       <Input
         ref={imageInputRef}
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/webm"
         hidden
         onChange={handleUpload}
       />

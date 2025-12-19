@@ -1,5 +1,8 @@
 import {
   ArticleBlockType,
+  ArticleDto,
+  ArticleSegment,
+  ArticleSegmentType,
   CreateArticleDto,
   VideoProvider,
 } from '@workspace/contracts';
@@ -58,4 +61,55 @@ export function parseVideoUrl(url: string): {
   }
 
   return { provider: null, videoId: null };
+}
+
+export function getReadingTime(
+  article: ArticleDto,
+  wordsPerMinute: number = 250
+): { minutes: number; seconds: number; words: number } {
+  const calcContentWordsCount = (segments: ArticleSegment[]) => {
+    return segments.reduce(
+      (words, segment) =>
+        segment.type === ArticleSegmentType.TEXT
+          ? words + segment.text.trim().split(/\s+/).filter(Boolean).length
+          : words,
+      0
+    );
+  };
+
+  const totalWords = article.blocks.reduce((totalWords, block) => {
+    if (
+      block.type === ArticleBlockType.PARAGRAPH ||
+      block.type === ArticleBlockType.QUOTE ||
+      block.type === ArticleBlockType.HEADING
+    ) {
+      return totalWords + calcContentWordsCount(block.content);
+    }
+    if (block.type === ArticleBlockType.CODE) {
+      return totalWords + block.content.trim().split(/\s+/).length;
+    }
+    if (block.type === ArticleBlockType.LIST) {
+      return (
+        totalWords +
+        block.items.reduce(
+          (words, item) => words + calcContentWordsCount(item.content),
+          0
+        )
+      );
+    }
+    if (
+      block.type === ArticleBlockType.VIDEO ||
+      block.type === ArticleBlockType.IMAGE
+    ) {
+      return totalWords + 20;
+    }
+
+    return totalWords;
+  }, 0);
+
+  return {
+    minutes: Math.floor(totalWords / wordsPerMinute),
+    seconds: Math.ceil((totalWords / wordsPerMinute) * 60) % 60,
+    words: totalWords,
+  };
 }

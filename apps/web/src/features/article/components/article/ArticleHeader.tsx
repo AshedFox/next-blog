@@ -34,7 +34,7 @@ const ArticleHeader = async ({ slugOrId }: Props) => {
         </h1>
         <div className="flex items-center gap-4 text-sm text-muted-foreground flex-col @lg:flex-row @lg:gap-6">
           <Link
-            href={`/users/${article.author.id}`}
+            href={`/users/${article.author.username}`}
             className="flex items-center gap-1 group"
           >
             <UserAvatar user={article.author} />

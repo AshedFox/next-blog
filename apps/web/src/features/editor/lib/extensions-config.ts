@@ -35,8 +35,7 @@ export const extensions: Extensions = [
       };
     },
   }).configure({
-    allowBase64: true,
-    HTMLAttributes: { class: 'rounded-lg' },
+    HTMLAttributes: { class: 'rounded-lg max-h-[80dvh]' },
   }),
   Youtube.configure({
     HTMLAttributes: { class: 'w-full aspect-video rounded-lg' },

@@ -24,13 +24,15 @@ export async function apiFetch<T = unknown>(
         .catch(() => ({ message: 'Request failed' }));
 
       return {
-        error: new Error(
-          error.message && typeof error.message === 'string'
-            ? error.message instanceof Array
-              ? error.message.join(', ')
-              : error.message
-            : `HTTP ${response.status}`
-        ),
+        error: {
+          status: response.status,
+          message:
+            error.message && typeof error.message === 'string'
+              ? error.message instanceof Array
+                ? error.message.join(', ')
+                : error.message
+              : `HTTP ${response.status}`,
+        },
       };
     }
 
@@ -39,7 +41,10 @@ export async function apiFetch<T = unknown>(
     };
   } catch {
     return {
-      error: new Error('Request failed'),
+      error: {
+        status: 500,
+        message: 'Request failed',
+      },
     };
   }
 }

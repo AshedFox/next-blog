@@ -1,3 +1,8 @@
+export type ApiError = {
+  message: string;
+  status: number;
+};
+
 export type ApiFetchResult<T> =
   | {
       data: T;
@@ -5,5 +10,5 @@ export type ApiFetchResult<T> =
     }
   | {
       data?: never;
-      error: Error;
+      error: ApiError;
     };

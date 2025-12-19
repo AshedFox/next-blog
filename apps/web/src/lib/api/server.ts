@@ -43,9 +43,10 @@ export async function apiFetch<T = unknown>(
       const { message } = (await res.json()) as { message: string | string[] };
 
       return {
-        error: new Error(
-          message instanceof Array ? message.join(', ') : message
-        ),
+        error: {
+          status: res.status,
+          message: message instanceof Array ? message.join(', ') : message,
+        },
       };
     }
 
@@ -54,7 +55,10 @@ export async function apiFetch<T = unknown>(
     };
   } catch {
     return {
-      error: new Error('Failed to fetch'),
+      error: {
+        status: 500,
+        message: 'Request failed',
+      },
     };
   }
 }

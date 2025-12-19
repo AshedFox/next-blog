@@ -1,9 +1,11 @@
-export default async function Page() {
-  'use cache';
+import { HeroSection } from '@/shared/components/hero';
 
+const Page = () => {
   return (
-    <div className="flex flex-col items-center justify-center px-10 py-4">
-      Hello world
-    </div>
+    <main className="grow min-h-screen">
+      <HeroSection />
+    </main>
   );
-}
+};
+
+export default Page;

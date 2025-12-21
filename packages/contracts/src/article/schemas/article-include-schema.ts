@@ -1,4 +1,6 @@
 import { createIncludeSchema } from '../../common';
 import { ArticleInclude } from '../enums';
 
-export const articleIncludeSchema = createIncludeSchema(ArticleInclude);
+export const articleIncludeSchema = createIncludeSchema(ArticleInclude).catch(
+  []
+);

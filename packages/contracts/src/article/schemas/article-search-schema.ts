@@ -10,5 +10,5 @@ export const articleSearchSchema = z.object({
   ...articleFiltersSchema.shape,
   sort: articleSortSchema.optional(),
   include: articleIncludeSchema.optional(),
-  search: z.string().min(2).max(100).optional(),
+  search: z.string().min(2).max(100).optional().catch(undefined),
 });

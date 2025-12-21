@@ -6,4 +6,4 @@ export const articleSortSchema = createSortSchema(
     multiple: true,
     default: { field: 'createdAt', direction: 'desc' },
   }
-);
+).catch({ createdAt: 'desc' });

@@ -54,6 +54,9 @@
   --sidebar-border: oklch(0.9 0.03 174);
   --sidebar-ring: oklch(0.53 0.16 174);
 
+  --hero: oklch(0.26 0.11 174);
+  --hero-foreground: oklch(0.98 0.01 174);
+
   --radius: 0.625rem;
 
   --shadow-2xs: 0px 1px 3px 0px oklch(0.15 0.04 174 / 0.02);
@@ -121,6 +124,9 @@
   --sidebar-border: oklch(0.22 0.04 174);
   --sidebar-ring: oklch(0.45 0.15 174);
 
+  --hero: oklch(0.14 0.06 174);
+  --hero-foreground: oklch(0.97 0.01 174);
+
   --shadow-2xs: 0px 1px 2px 0px oklch(0 0 0 / 0.5);
   --shadow-xs: 0px 1px 2px 0px oklch(0 0 0 / 0.5);
   --shadow-sm:
@@ -170,6 +176,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-hero: var(--hero);
+  --color-hero-foreground: var(--hero-foreground);
 
   --font-heading: var(--font-heading);
 

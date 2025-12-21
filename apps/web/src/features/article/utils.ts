@@ -1,6 +1,7 @@
 import {
   ArticleBlockType,
   ArticleDto,
+  ArticleSearch,
   ArticleSegment,
   ArticleSegmentType,
   CreateArticleDto,
@@ -112,4 +113,27 @@ export function getReadingTime(
     seconds: Math.ceil((totalWords / wordsPerMinute) * 60) % 60,
     words: totalWords,
   };
+}
+
+export function createArticleSearchParams(
+  query: ArticleSearch
+): URLSearchParams {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (!value) {
+      continue;
+    }
+
+    if (key === 'sort') {
+      const sort = value as NonNullable<ArticleSearch['sort']>;
+      Object.entries(sort).forEach(([field, direction]) => {
+        searchParams.set(key, `${field}:${direction}`);
+      });
+      continue;
+    }
+
+    searchParams.set(key, String(value));
+  }
+
+  return searchParams;
 }

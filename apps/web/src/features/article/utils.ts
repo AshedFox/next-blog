@@ -1,6 +1,7 @@
 import {
   ArticleBlockType,
   ArticleDto,
+  ArticleSearch,
   ArticleSegment,
   ArticleSegmentType,
   CreateArticleDto,
@@ -112,4 +113,57 @@ export function getReadingTime(
     seconds: Math.ceil((totalWords / wordsPerMinute) * 60) % 60,
     words: totalWords,
   };
+}
+
+export function createArticleSearchParams(
+  query: ArticleSearch
+): URLSearchParams {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (!value) {
+      continue;
+    }
+
+    if (key === 'sort') {
+      const sort = value as NonNullable<ArticleSearch['sort']>;
+      Object.entries(sort).forEach(([field, direction]) => {
+        searchParams.set(key, `${field}:${direction}`);
+      });
+      continue;
+    }
+
+    searchParams.set(key, String(value));
+  }
+
+  return searchParams;
+}
+export function getArticleSnippet(
+  article: ArticleDto,
+  length: number = 180
+): string | null {
+  const paragraph = article.blocks?.find(
+    (b) => b.type === ArticleBlockType.PARAGRAPH
+  );
+
+  if (!paragraph) {
+    return null;
+  }
+
+  const text = paragraph.content
+    .filter((s) => s.type === 'TEXT')
+    .map(({ text }) => text ?? '')
+    .join(' ')
+    .trim();
+
+  return text.length > length ? `${text.slice(0, length - 3)}...` : text;
+}
+
+export function getArticleFirstImage(article: ArticleDto): string | null {
+  const image = article.blocks?.find((b) => b.type === ArticleBlockType.IMAGE);
+
+  if (!image) {
+    return null;
+  }
+
+  return image.url;
 }

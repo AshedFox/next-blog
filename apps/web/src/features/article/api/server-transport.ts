@@ -3,12 +3,16 @@ import 'server-only';
 import {
   ArticleDto,
   ArticleInclude,
+  ArticleSearch,
+  ArticleSearchResponseDto,
   ArticleWithRelationsDto,
   CreateArticleDto,
   UpdateArticleDto,
 } from '@workspace/contracts';
 
 import { serverApi } from '@/lib/api/server';
+
+import { createArticleSearchParams } from '../utils';
 
 export function createArticle(input: CreateArticleDto) {
   return serverApi.post<ArticleDto>('/api/articles', input, true);
@@ -28,5 +32,13 @@ export function fetchArticle<R extends readonly ArticleInclude[]>(
 ) {
   return serverApi.get<ArticleWithRelationsDto<R>>(
     `/api/articles/${slugOrId}${include ? `?include=${include}` : ''}`
+  );
+}
+
+export function fetchArticleList(query: ArticleSearch) {
+  const searchParams = createArticleSearchParams(query);
+
+  return serverApi.get<ArticleSearchResponseDto>(
+    `/api/articles?${searchParams.toString()}`
   );
 }

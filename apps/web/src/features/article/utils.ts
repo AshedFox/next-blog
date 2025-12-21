@@ -137,3 +137,33 @@ export function createArticleSearchParams(
 
   return searchParams;
 }
+export function getArticleSnippet(
+  article: ArticleDto,
+  length: number = 180
+): string | null {
+  const paragraph = article.blocks?.find(
+    (b) => b.type === ArticleBlockType.PARAGRAPH
+  );
+
+  if (!paragraph) {
+    return null;
+  }
+
+  const text = paragraph.content
+    .filter((s) => s.type === 'TEXT')
+    .map(({ text }) => text ?? '')
+    .join(' ')
+    .trim();
+
+  return text.length > length ? `${text.slice(0, length - 3)}...` : text;
+}
+
+export function getArticleFirstImage(article: ArticleDto): string | null {
+  const image = article.blocks?.find((b) => b.type === ArticleBlockType.IMAGE);
+
+  if (!image) {
+    return null;
+  }
+
+  return image.url;
+}

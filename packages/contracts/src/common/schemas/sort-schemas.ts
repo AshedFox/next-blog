@@ -32,7 +32,7 @@ export const createSortSchema = <T extends readonly string[]>(
           format: 'field:asc|desc',
           message: `Invalid sort format: ${value}`,
         });
-        return {};
+        return z.NEVER;
       }
 
       [field, direction] = [f, d];

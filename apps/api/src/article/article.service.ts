@@ -17,6 +17,7 @@ import {
   VideoProvider,
 } from '@workspace/contracts';
 import { randomBytes } from 'crypto';
+import z from 'zod';
 
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
 import { FileService } from '@/file/file.service';
@@ -26,6 +27,7 @@ import { StorageService } from '@/storage/storage.service';
 import { CreateArticleInput } from './article.types';
 import { ArticleSearchDto } from './dto/article-search.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { dbArticleSchema } from './schemas/db-article.schema';
 
 @Injectable()
 export class ArticleService {
@@ -130,6 +132,47 @@ export class ArticleService {
     );
   }
 
+  private getRankSql(search: string): Prisma.Sql {
+    return Prisma.sql`(
+      ts_rank_cd("searchVector", websearch_to_tsquery('russian', ${search})) +
+      ts_rank_cd("searchVector", websearch_to_tsquery('english', ${search}))
+    )`;
+  }
+
+  private buildRawWhere(
+    filters: ArticleFilters,
+    search?: string
+  ): Prisma.Sql[] {
+    const where: Prisma.Sql[] = [];
+
+    if (search) {
+      where.push(Prisma.sql`(
+        "searchVector" @@ websearch_to_tsquery('english', ${search}) OR
+        "searchVector" @@ websearch_to_tsquery('russian', ${search})
+      )`);
+    }
+
+    if (filters.authorId?.length) {
+      where.push(Prisma.sql`"authorId" IN (${Prisma.join(filters.authorId)})`);
+    }
+
+    if (filters.status?.length) {
+      where.push(
+        Prisma.sql`"status"::text IN (${Prisma.join(filters.status)})`
+      );
+    }
+
+    if (filters.createdAtGte) {
+      where.push(Prisma.sql`"createdAt" >= ${filters.createdAtGte}`);
+    }
+
+    if (filters.createdAtLte) {
+      where.push(Prisma.sql`"createdAt" <= ${filters.createdAtLte}`);
+    }
+
+    return where;
+  }
+
   private buildFiltersWhere(filters: ArticleFilters): Prisma.ArticleWhereInput {
     const where: Prisma.ArticleWhereInput = {};
 
@@ -197,6 +240,71 @@ export class ArticleService {
     }
 
     return args;
+  }
+
+  private async rawSearch(query: ArticleSearchDto): Promise<Article[]> {
+    const { page, limit, include, search, sort, ...filters } = query;
+
+    const where = this.buildRawWhere(filters, search);
+    const whereClause =
+      where.length > 0
+        ? Prisma.sql`WHERE ${Prisma.join(where, ' AND ')}`
+        : Prisma.empty;
+
+    const rankCalculation = this.getRankSql(search!);
+
+    const orderBy: Prisma.Sql[] = [];
+    if (sort) {
+      Object.entries(sort).forEach(([field, direction]) => {
+        orderBy.push(
+          Prisma.sql`"${Prisma.raw(field)}" ${Prisma.raw(direction)}`
+        );
+      });
+    }
+    orderBy.push(Prisma.sql`${rankCalculation} DESC`, Prisma.sql`id ASC`);
+
+    const orderByClause =
+      orderBy.length > 0
+        ? Prisma.sql`ORDER BY ${Prisma.join(orderBy, ', ')}`
+        : Prisma.empty;
+
+    const selects: Prisma.Sql[] = [
+      Prisma.sql`
+        "Article"."id",
+        "Article"."slug",
+        "Article"."title",
+        "Article"."blocks",
+        "Article"."status",
+        "Article"."createdAt",
+        "Article"."updatedAt",
+        "Article"."deletedAt",
+        "Article"."authorId"
+      `,
+    ];
+    const joins: Prisma.Sql[] = [];
+
+    if (include?.includes('author')) {
+      selects.push(Prisma.sql`row_to_json("Author".*) as author`);
+      joins.push(
+        Prisma.sql`LEFT JOIN "User" as "Author" ON "Article"."authorId" = "Author".id`
+      );
+    }
+
+    const joinsClause =
+      joins.length > 0 ? Prisma.join(joins, ' ') : Prisma.empty;
+
+    const offset = page ? (page - 1) * limit : 0;
+
+    const articles = await this.prisma.$queryRaw`
+      SELECT ${Prisma.join(selects, ', ')}
+      FROM "Article"
+      ${joinsClause}
+      ${whereClause}
+      ${orderByClause}
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    return z.array(dbArticleSchema).parseAsync(articles);
   }
 
   async search(query: ArticleSearchDto): Promise<Article[]> {

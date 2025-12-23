@@ -289,18 +289,40 @@ export class ArticleService {
   }
 
   async search(query: ArticleSearchDto): Promise<Article[]> {
-    return this.prisma.article.findMany(this.parseSearchQueryToArgs(query));
+    if (!query.search) {
+      return this.prisma.article.findMany(this.parseSearchQueryToArgs(query));
+    }
+    return this.rawSearch(query);
   }
 
   async searchAndCount(query: ArticleSearchDto): Promise<[Article[], number]> {
-    const args = this.parseSearchQueryToArgs(query);
+    if (!query.search) {
+      const args = this.parseSearchQueryToArgs(query);
+      return this.prisma.$transaction([
+        this.prisma.article.findMany(args),
+        this.prisma.article.count({ where: args.where }),
+      ]);
+    }
 
-    return this.prisma.$transaction([
-      this.prisma.article.findMany(args),
-      this.prisma.article.count({
-        where: args.where,
-      }),
+    const { search, ...filters } = query;
+    const whereConditions = this.buildRawWhere(filters, search);
+
+    const whereClause = whereConditions.length
+      ? Prisma.sql`WHERE ${Prisma.join(whereConditions, ' AND ')}`
+      : Prisma.empty;
+
+    const countQuery = Prisma.sql`
+      SELECT COUNT(*)::int as count 
+      FROM "Article" 
+      ${whereClause}
+    `;
+
+    const [articles, countResult] = await Promise.all([
+      this.rawSearch(query),
+      this.prisma.$queryRaw<{ count: number }[]>(countQuery),
     ]);
+
+    return [articles, countResult[0]?.count || 0];
   }
 
   async findOne(

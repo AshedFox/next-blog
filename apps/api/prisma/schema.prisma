@@ -76,7 +76,7 @@ model Article {
   slug         String                   @unique @db.VarChar(127)
   title        String                   @db.VarChar(127)
   blocks       Json                     @db.JsonB
-  searchVector Unsupported("tsvector")?
+  searchVector Unsupported("tsvector")? @default(dbgenerated("(((setweight(to_tsvector('english'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::\"char\") || setweight(to_tsvector('russian'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::\"char\")) || setweight(to_tsvector('english'::regconfig, extract_article_content(blocks)), 'B'::\"char\")) || setweight(to_tsvector('russian'::regconfig, extract_article_content(blocks)), 'B'::\"char\"))"))
   status       ArticleStatus            @default(DRAFT)
   createdAt    DateTime                 @default(now())
   updatedAt    DateTime                 @updatedAt

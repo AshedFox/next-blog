@@ -83,4 +83,7 @@ model Article {
   deletedAt    DateTime?
   authorId     String                   @db.Uuid
   author       User                     @relation(fields: [authorId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([authorId])
 }

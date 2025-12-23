@@ -17,6 +17,7 @@ import {
   VideoProvider,
 } from '@workspace/contracts';
 import { randomBytes } from 'crypto';
+import z from 'zod';
 
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
 import { FileService } from '@/file/file.service';
@@ -26,6 +27,7 @@ import { StorageService } from '@/storage/storage.service';
 import { CreateArticleInput } from './article.types';
 import { ArticleSearchDto } from './dto/article-search.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
+import { dbArticleSchema } from './schemas/db-article.schema';
 
 @Injectable()
 export class ArticleService {
@@ -130,19 +132,56 @@ export class ArticleService {
     );
   }
 
+  private getRankSql(search: string): Prisma.Sql {
+    return Prisma.sql`(
+      ts_rank_cd("searchVector", websearch_to_tsquery('russian', ${search})) +
+      ts_rank_cd("searchVector", websearch_to_tsquery('english', ${search}))
+    )`;
+  }
+
+  private buildRawWhere(
+    filters: ArticleFilters,
+    search?: string
+  ): Prisma.Sql[] {
+    const where: Prisma.Sql[] = [];
+
+    if (search) {
+      where.push(Prisma.sql`(
+        "searchVector" @@ websearch_to_tsquery('english', ${search}) OR
+        "searchVector" @@ websearch_to_tsquery('russian', ${search})
+      )`);
+    }
+
+    if (filters.authorId?.length) {
+      where.push(Prisma.sql`"authorId" IN (${Prisma.join(filters.authorId)})`);
+    }
+
+    if (filters.status?.length) {
+      where.push(
+        Prisma.sql`"status"::text IN (${Prisma.join(filters.status)})`
+      );
+    }
+
+    if (filters.createdAtGte) {
+      where.push(Prisma.sql`"createdAt" >= ${filters.createdAtGte}`);
+    }
+
+    if (filters.createdAtLte) {
+      where.push(Prisma.sql`"createdAt" <= ${filters.createdAtLte}`);
+    }
+
+    return where;
+  }
+
   private buildFiltersWhere(filters: ArticleFilters): Prisma.ArticleWhereInput {
     const where: Prisma.ArticleWhereInput = {};
 
-    if (filters.authorId) {
+    if (filters.authorId?.length) {
       where.authorId = { in: filters.authorId };
     }
 
-    if (filters.status) {
+    if (filters.status?.length) {
       where.status = { in: filters.status };
-    }
-
-    if (filters.title) {
-      where.title = { contains: filters.title, mode: 'insensitive' };
     }
 
     if (filters.createdAtGte || filters.createdAtLte) {
@@ -158,22 +197,19 @@ export class ArticleService {
   private parseSearchQueryToArgs(
     query: ArticleSearchDto
   ): Prisma.ArticleFindManyArgs {
-    const args: Prisma.ArticleFindManyArgs = {};
-    const { page, limit, cursor, include, search, sort, ...filters } = query;
+    const { page, limit, cursor, include, sort, ...filters } = query;
+    const args: Prisma.ArticleFindManyArgs = {
+      include: include?.reduce((acc, i) => ({ ...acc, [i]: true }), {}),
+    };
 
     if (page) {
       args.take = limit;
       args.skip = (page - 1) * limit;
     } else {
-      args.take = limit + 1;
-      args.cursor = cursor ? { id: cursor } : undefined;
-    }
-
-    if (include && include.length > 0) {
-      args.include = include.reduce((acc, item) => {
-        acc[item] = true;
-        return acc;
-      }, {} as Prisma.ArticleInclude);
+      args.take = limit;
+      if (cursor) {
+        args.cursor = { id: cursor };
+      }
     }
 
     if (sort) {
@@ -182,36 +218,111 @@ export class ArticleService {
       }));
     }
 
-    if (search) {
-      args.where = {
-        OR: [{ title: { contains: search, mode: 'insensitive' } }],
-      };
-    }
-
-    if (filters && Object.keys(filters).length > 0) {
-      const filterWhere = this.buildFiltersWhere(filters);
-      args.where = {
-        ...args.where,
-        ...filterWhere,
-      };
-    }
+    args.where = this.buildFiltersWhere(filters);
 
     return args;
   }
 
+  private async rawSearch(query: ArticleSearchDto): Promise<Article[]> {
+    const { page, limit, include, search, sort, ...filters } = query;
+
+    const where = this.buildRawWhere(filters, search);
+    const whereClause =
+      where.length > 0
+        ? Prisma.sql`WHERE ${Prisma.join(where, ' AND ')}`
+        : Prisma.empty;
+
+    const rankCalculation = this.getRankSql(search!);
+
+    const orderBy: Prisma.Sql[] = [];
+    if (sort) {
+      Object.entries(sort).forEach(([field, direction]) => {
+        orderBy.push(
+          Prisma.sql`"${Prisma.raw(field)}" ${Prisma.raw(direction)}`
+        );
+      });
+    }
+    orderBy.push(Prisma.sql`${rankCalculation} DESC`, Prisma.sql`id ASC`);
+
+    const orderByClause =
+      orderBy.length > 0
+        ? Prisma.sql`ORDER BY ${Prisma.join(orderBy, ', ')}`
+        : Prisma.empty;
+
+    const selects: Prisma.Sql[] = [
+      Prisma.sql`
+        "Article"."id",
+        "Article"."slug",
+        "Article"."title",
+        "Article"."blocks",
+        "Article"."status",
+        "Article"."createdAt",
+        "Article"."updatedAt",
+        "Article"."deletedAt",
+        "Article"."authorId"
+      `,
+    ];
+    const joins: Prisma.Sql[] = [];
+
+    if (include?.includes('author')) {
+      selects.push(Prisma.sql`row_to_json("Author".*) as author`);
+      joins.push(
+        Prisma.sql`LEFT JOIN "User" as "Author" ON "Article"."authorId" = "Author".id`
+      );
+    }
+
+    const joinsClause =
+      joins.length > 0 ? Prisma.join(joins, ' ') : Prisma.empty;
+
+    const offset = page ? (page - 1) * limit : 0;
+
+    const articles = await this.prisma.$queryRaw`
+      SELECT ${Prisma.join(selects, ', ')}
+      FROM "Article"
+      ${joinsClause}
+      ${whereClause}
+      ${orderByClause}
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+
+    return z.array(dbArticleSchema).parseAsync(articles);
+  }
+
   async search(query: ArticleSearchDto): Promise<Article[]> {
-    return this.prisma.article.findMany(this.parseSearchQueryToArgs(query));
+    if (!query.search) {
+      return this.prisma.article.findMany(this.parseSearchQueryToArgs(query));
+    }
+    return this.rawSearch(query);
   }
 
   async searchAndCount(query: ArticleSearchDto): Promise<[Article[], number]> {
-    const args = this.parseSearchQueryToArgs(query);
+    if (!query.search) {
+      const args = this.parseSearchQueryToArgs(query);
+      return this.prisma.$transaction([
+        this.prisma.article.findMany(args),
+        this.prisma.article.count({ where: args.where }),
+      ]);
+    }
 
-    return this.prisma.$transaction([
-      this.prisma.article.findMany(args),
-      this.prisma.article.count({
-        where: args.where,
-      }),
+    const { search, ...filters } = query;
+    const whereConditions = this.buildRawWhere(filters, search);
+
+    const whereClause = whereConditions.length
+      ? Prisma.sql`WHERE ${Prisma.join(whereConditions, ' AND ')}`
+      : Prisma.empty;
+
+    const countQuery = Prisma.sql`
+      SELECT COUNT(*)::int as count 
+      FROM "Article" 
+      ${whereClause}
+    `;
+
+    const [articles, countResult] = await Promise.all([
+      this.rawSearch(query),
+      this.prisma.$queryRaw<{ count: number }[]>(countQuery),
     ]);
+
+    return [articles, countResult[0]?.count || 0];
   }
 
   async findOne(

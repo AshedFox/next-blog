@@ -86,4 +86,5 @@ model Article {
 
   @@index([status, createdAt])
   @@index([authorId])
+  @@index([searchVector], type: Gin)
 }

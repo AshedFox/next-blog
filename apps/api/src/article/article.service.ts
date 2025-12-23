@@ -91,20 +91,25 @@ export class ArticleService {
       input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
     );
 
+    let slug = slugify(input.title);
+
+    const article = await this.prisma.article.findUnique({
+      where: { slug },
+    });
+
+    if (!article) {
+      return this.prisma.article.create({ data: { ...input, slug } });
+    }
+
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       try {
-        const slug = slugify(
-          `${input.title} ${randomBytes(6).toString('base64url')}`
+        slug = slugify(
+          `${input.title}-${randomBytes(6).toString('base64url')}`
         );
 
-        return this.prisma.article.create({
-          data: {
-            ...input,
-            slug,
-          },
-        });
+        return this.prisma.article.create({ data: { ...input, slug } });
       } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError) {
           if (error.code === 'P2002') {

@@ -176,16 +176,12 @@ export class ArticleService {
   private buildFiltersWhere(filters: ArticleFilters): Prisma.ArticleWhereInput {
     const where: Prisma.ArticleWhereInput = {};
 
-    if (filters.authorId) {
+    if (filters.authorId?.length) {
       where.authorId = { in: filters.authorId };
     }
 
-    if (filters.status) {
+    if (filters.status?.length) {
       where.status = { in: filters.status };
-    }
-
-    if (filters.title) {
-      where.title = { contains: filters.title, mode: 'insensitive' };
     }
 
     if (filters.createdAtGte || filters.createdAtLte) {
@@ -201,22 +197,19 @@ export class ArticleService {
   private parseSearchQueryToArgs(
     query: ArticleSearchDto
   ): Prisma.ArticleFindManyArgs {
-    const args: Prisma.ArticleFindManyArgs = {};
-    const { page, limit, cursor, include, search, sort, ...filters } = query;
+    const { page, limit, cursor, include, sort, ...filters } = query;
+    const args: Prisma.ArticleFindManyArgs = {
+      include: include?.reduce((acc, i) => ({ ...acc, [i]: true }), {}),
+    };
 
     if (page) {
       args.take = limit;
       args.skip = (page - 1) * limit;
     } else {
-      args.take = limit + 1;
-      args.cursor = cursor ? { id: cursor } : undefined;
-    }
-
-    if (include && include.length > 0) {
-      args.include = include.reduce((acc, item) => {
-        acc[item] = true;
-        return acc;
-      }, {} as Prisma.ArticleInclude);
+      args.take = limit;
+      if (cursor) {
+        args.cursor = { id: cursor };
+      }
     }
 
     if (sort) {
@@ -225,19 +218,7 @@ export class ArticleService {
       }));
     }
 
-    if (search) {
-      args.where = {
-        OR: [{ title: { contains: search, mode: 'insensitive' } }],
-      };
-    }
-
-    if (filters && Object.keys(filters).length > 0) {
-      const filterWhere = this.buildFiltersWhere(filters);
-      args.where = {
-        ...args.where,
-        ...filterWhere,
-      };
-    }
+    args.where = this.buildFiltersWhere(filters);
 
     return args;
   }

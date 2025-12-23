@@ -4,7 +4,6 @@ import { createArrayFilterSchema, datetimeInSchema } from '../../common';
 import { ArticleStatus } from '../enums';
 
 export const articleFiltersSchema = z.object({
-  title: z.string().min(2).max(120).optional().catch(undefined),
   status: createArrayFilterSchema(z.array(z.enum(ArticleStatus)))
     .optional()
     .catch(undefined),

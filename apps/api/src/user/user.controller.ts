@@ -14,6 +14,10 @@ import { ZodResponse } from 'nestjs-zod';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { MinRole } from '@/auth/decorators/min-role.decorator';
+import { Public } from '@/auth/decorators/public.decorator';
+import { CommentService } from '@/comment/comment.service';
+import { CommentSearchDto } from '@/comment/dto/comment-search.dto';
+import { CommentSearchResponseDto } from '@/comment/dto/comment-search-response.dto';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
@@ -22,7 +26,10 @@ import { UserService } from './user.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly commentService: CommentService
+  ) {}
 
   @Get('me')
   @ZodResponse({ type: UserDto })
@@ -82,5 +89,26 @@ export class UserController {
   @ZodResponse({ type: UserDto })
   delete(@Param('id', ParseUUIDPipe) id: string) {
     return this.userService.softDelete(id);
+  }
+
+  @Public()
+  @Get(':id/comments')
+  @ZodResponse({ type: CommentSearchResponseDto, status: 200 })
+  async getUserComments(
+    @Param('id') id: string,
+    @Query() query: CommentSearchDto
+  ) {
+    const data = await this.commentService.searchByAuthor(id, query);
+    const limit = query.limit;
+    const hasNextPage = data.length > limit;
+
+    return {
+      data: data.slice(0, limit),
+      meta: {
+        limit,
+        cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
+        hasNextPage,
+      },
+    };
   }
 }

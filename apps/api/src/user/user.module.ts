@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { CommentModule } from '@/comment/comment.module';
 import { HashModule } from '@/hash/hash.module';
 import { UsernameGeneratorModule } from '@/username-generator/username-generator.module';
 
@@ -8,7 +9,7 @@ import { UserService } from './user.service';
 import { UserCacheService } from './user-cache.service';
 
 @Module({
-  imports: [UsernameGeneratorModule, HashModule],
+  imports: [UsernameGeneratorModule, HashModule, CommentModule],
   controllers: [UserController],
   providers: [UserService, UserCacheService],
   exports: [UserService],

@@ -1,5 +1,6 @@
 export const ArticleInclude = {
   author: 'author',
+  comments: 'comments',
 } as const;
 
 export type ArticleInclude =

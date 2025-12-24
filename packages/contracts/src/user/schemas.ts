@@ -44,21 +44,13 @@ export const userIncludeSchema = createIncludeSchema(UserInclude);
 
 export function createUserWithRelationsSchema<T extends readonly UserInclude[]>(
   include: T
-): z.ZodType<
-  UserDto & {
-    [K in Extract<T[number], keyof UserDto>]-?: NonNullable<UserDto[K]>;
-  }
-> {
-  const includeSet = new Set(include);
+) {
+  const overrides = include.reduce(
+    (acc, item) => ({ ...acc, [item]: userSchema.shape[item].unwrap() }),
+    {}
+  );
 
-  return userSchema.extend({
-    articles: includeSet.has('articles')
-      ? userSchema.shape.articles.unwrap()
-      : userSchema.shape.articles,
-    comments: includeSet.has('comments')
-      ? userSchema.shape.comments.unwrap()
-      : userSchema.shape.comments,
-  }) as unknown as z.ZodType<
+  return userSchema.extend(overrides) as unknown as z.ZodType<
     UserDto & {
       [K in Extract<T[number], keyof UserDto>]-?: NonNullable<UserDto[K]>;
     }

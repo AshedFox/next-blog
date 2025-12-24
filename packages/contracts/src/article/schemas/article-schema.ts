@@ -26,23 +26,13 @@ export const articleSchema = baseArticleSchema.extend({
 
 export function createArticleWithRelationsSchema<
   T extends readonly ArticleInclude[],
->(
-  include: T
-): z.ZodType<
-  ArticleDto & {
-    [K in Extract<T[number], keyof ArticleDto>]-?: NonNullable<ArticleDto[K]>;
-  }
-> {
-  const includeSet = new Set(include);
+>(include: T) {
+  const overrides = include.reduce(
+    (acc, item) => ({ ...acc, [item]: articleSchema.shape[item].unwrap() }),
+    {}
+  );
 
-  return articleSchema.extend({
-    author: includeSet.has('author')
-      ? articleSchema.shape.author.unwrap()
-      : articleSchema.shape.author,
-    comments: includeSet.has('comments')
-      ? articleSchema.shape.comments.unwrap()
-      : articleSchema.shape.comments,
-  }) as unknown as z.ZodType<
+  return articleSchema.extend(overrides) as unknown as z.ZodType<
     ArticleDto & {
       [K in Extract<T[number], keyof ArticleDto>]-?: NonNullable<ArticleDto[K]>;
     }

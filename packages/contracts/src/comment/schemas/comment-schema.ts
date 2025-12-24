@@ -26,29 +26,13 @@ export const commentSchema = baseCommentSchema.extend({
 
 export function createCommentWithRelationsSchema<
   T extends readonly CommentInclude[],
->(
-  include: T
-): z.ZodType<
-  CommentDto & {
-    [K in Extract<T[number], keyof CommentDto>]-?: NonNullable<CommentDto[K]>;
-  }
-> {
-  const includeSet = new Set(include);
+>(include: T) {
+  const overrides = include.reduce(
+    (acc, item) => ({ ...acc, [item]: commentSchema.shape[item].unwrap() }),
+    {}
+  );
 
-  return commentSchema.extend({
-    author: includeSet.has('author')
-      ? commentSchema.shape.author.unwrap()
-      : commentSchema.shape.author,
-    article: includeSet.has('article')
-      ? commentSchema.shape.article.unwrap()
-      : commentSchema.shape.article,
-    replies: includeSet.has('replies')
-      ? commentSchema.shape.replies.unwrap()
-      : commentSchema.shape.replies,
-    replyTo: includeSet.has('replyTo')
-      ? commentSchema.shape.replyTo.unwrap()
-      : commentSchema.shape.replyTo,
-  }) as unknown as z.ZodType<
+  return commentSchema.extend(overrides) as unknown as z.ZodType<
     CommentDto & {
       [K in Extract<T[number], keyof CommentDto>]-?: NonNullable<CommentDto[K]>;
     }

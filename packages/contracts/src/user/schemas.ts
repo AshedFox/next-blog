@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { baseArticleSchema } from '../article';
+import { baseCommentSchema } from '../comment';
 import { createIncludeSchema, datetimeOutSchema } from '../common';
 import { UserRole, UserStatus } from './enums';
 import { UserInclude } from './enums';
@@ -36,6 +37,7 @@ export const baseUserSchema = z.object({
 
 export const userSchema = baseUserSchema.extend({
   articles: z.lazy(() => z.array(baseArticleSchema)).optional(),
+  comments: z.lazy(() => z.array(baseCommentSchema)).optional(),
 });
 
 export const userIncludeSchema = createIncludeSchema(UserInclude);
@@ -50,9 +52,12 @@ export function createUserWithRelationsSchema<T extends readonly UserInclude[]>(
   const includeSet = new Set(include);
 
   return userSchema.extend({
-    author: includeSet.has('articles')
+    articles: includeSet.has('articles')
       ? userSchema.shape.articles.unwrap()
       : userSchema.shape.articles,
+    comments: includeSet.has('comments')
+      ? userSchema.shape.comments.unwrap()
+      : userSchema.shape.comments,
   }) as unknown as z.ZodType<
     UserDto & {
       [K in Extract<T[number], keyof UserDto>]-?: NonNullable<UserDto[K]>;

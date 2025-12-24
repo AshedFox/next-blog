@@ -1,5 +1,6 @@
 export const UserInclude = {
   articles: 'articles',
+  comments: 'comments',
 } as const;
 
 export type UserInclude = (typeof UserInclude)[keyof typeof UserInclude];

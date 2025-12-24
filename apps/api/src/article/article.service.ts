@@ -263,11 +263,27 @@ export class ArticleService {
       `,
     ];
     const joins: Prisma.Sql[] = [];
+    const includeSet = new Set(include);
 
-    if (include?.includes('author')) {
+    if (includeSet.has('author')) {
       selects.push(Prisma.sql`row_to_json("Author".*) as author`);
       joins.push(
         Prisma.sql`LEFT JOIN "User" as "Author" ON "Article"."authorId" = "Author".id`
+      );
+    }
+    if (includeSet.has('comments')) {
+      selects.push(
+        Prisma.sql`COALESCE("Comments".data, '[]'::json) as comments`
+      );
+
+      joins.push(
+        Prisma.sql`
+          LEFT JOIN LATERAL (
+            SELECT json_agg(row_to_json("Comment".*)) as data
+            FROM "Comment"
+            WHERE "Comment"."articleId" = "Article".id
+          ) as "Comments" ON true
+        `
       );
     }
 

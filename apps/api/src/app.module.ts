@@ -6,6 +6,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 import { ArticleModule } from './article/article.module';
 import { AuthModule } from './auth/auth.module';
+import { CommentModule } from './comment/comment.module';
 import { HttpExceptionFilter } from './common/http/http-exception-filter';
 import { FileModule } from './file/file.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -18,6 +19,7 @@ import { UserModule } from './user/user.module';
     ScheduleModule.forRoot(),
     AuthModule,
     ArticleModule,
+    CommentModule,
     FileModule,
     PrismaModule,
     RedisModule,

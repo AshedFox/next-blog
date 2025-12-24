@@ -1,5 +1,6 @@
 import z from 'zod';
 
+import { baseCommentSchema } from '../../comment';
 import { datetimeOutSchema } from '../../common';
 import { baseUserSchema } from '../../user';
 import { ArticleInclude, ArticleStatus } from '../enums';
@@ -20,24 +21,18 @@ export const baseArticleSchema = z.object({
 
 export const articleSchema = baseArticleSchema.extend({
   author: z.lazy(() => baseUserSchema).optional(),
+  comments: z.lazy(() => z.array(baseCommentSchema)).optional(),
 });
 
 export function createArticleWithRelationsSchema<
   T extends readonly ArticleInclude[],
->(
-  include: T
-): z.ZodType<
-  ArticleDto & {
-    [K in Extract<T[number], keyof ArticleDto>]-?: NonNullable<ArticleDto[K]>;
-  }
-> {
-  const includeSet = new Set(include);
+>(include: T) {
+  const overrides = include.reduce(
+    (acc, item) => ({ ...acc, [item]: articleSchema.shape[item].unwrap() }),
+    {}
+  );
 
-  return articleSchema.extend({
-    author: includeSet.has('author')
-      ? articleSchema.shape.author.unwrap()
-      : articleSchema.shape.author,
-  }) as unknown as z.ZodType<
+  return articleSchema.extend(overrides) as unknown as z.ZodType<
     ArticleDto & {
       [K in Extract<T[number], keyof ArticleDto>]-?: NonNullable<ArticleDto[K]>;
     }

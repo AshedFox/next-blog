@@ -95,41 +95,28 @@ export class ArticleService {
 
     let slug = slugify(input.title);
 
-    const article = await this.prisma.article.findUnique({
-      where: { slug },
-    });
-
-    if (!article) {
-      return this.prisma.article.create({ data: { ...input, slug } });
-    }
-
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-      try {
+      if (attempt > 0) {
         slug = slugify(
           `${input.title}-${randomBytes(6).toString('base64url')}`
         );
-
+      }
+      try {
         return this.prisma.article.create({ data: { ...input, slug } });
       } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError) {
-          if (error.code === 'P2002') {
-            if (attempt === maxAttempts - 1) {
-              throw new InternalServerErrorException(
-                'Failed to generate unique slug'
-              );
-            }
-            continue;
-          }
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          continue;
         }
         throw error;
       }
     }
 
-    throw new InternalServerErrorException(
-      'Impossible happended, unable to create article'
-    );
+    throw new InternalServerErrorException('Failed to generate unique slug');
   }
 
   private getRankSql(search: string): Prisma.Sql {

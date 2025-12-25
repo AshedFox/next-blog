@@ -89,10 +89,7 @@ export class UserService {
       where: { id },
       include:
         include.length > 0
-          ? include.reduce((acc, item) => {
-              acc[item] = true;
-              return acc;
-            }, {} as Prisma.UserInclude)
+          ? Object.fromEntries(include.map((item) => [item, true]))
           : undefined,
     });
 

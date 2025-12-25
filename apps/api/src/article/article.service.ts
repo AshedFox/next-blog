@@ -201,9 +201,7 @@ export class ArticleService {
     }
 
     if (sort) {
-      args.orderBy = Object.entries(sort).map(([field, direction]) => ({
-        [field]: direction,
-      }));
+      args.orderBy = sort;
     }
 
     args.where = this.buildFiltersWhere(filters);
@@ -341,10 +339,7 @@ export class ArticleService {
       },
       include:
         include.length > 0
-          ? include.reduce((acc, item) => {
-              acc[item] = true;
-              return acc;
-            }, {} as Prisma.ArticleInclude)
+          ? Object.fromEntries(include.map((item) => [item, true]))
           : undefined,
     });
   }
@@ -375,10 +370,7 @@ export class ArticleService {
       },
       include:
         include.length > 0
-          ? include.reduce((acc, item) => {
-              acc[item] = true;
-              return acc;
-            }, {} as Prisma.ArticleInclude)
+          ? Object.fromEntries(include.map((item) => [item, true]))
           : undefined,
     });
   }
@@ -408,12 +400,7 @@ export class ArticleService {
 
     const updated = await this.prisma.article.update({
       where: { id },
-      data: {
-        ...input,
-        blocks: input.blocks
-          ? input.blocks.map((block) => ({ ...block }))
-          : undefined,
-      },
+      data: input,
     });
 
     if (input.blocks) {

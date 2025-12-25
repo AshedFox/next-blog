@@ -201,9 +201,7 @@ export class ArticleService {
     }
 
     if (sort) {
-      args.orderBy = Object.entries(sort).map(([field, direction]) => ({
-        [field]: direction,
-      }));
+      args.orderBy = sort;
     }
 
     args.where = this.buildFiltersWhere(filters);

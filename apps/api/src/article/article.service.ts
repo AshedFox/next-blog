@@ -194,7 +194,7 @@ export class ArticleService {
       args.take = limit;
       args.skip = (page - 1) * limit;
     } else {
-      args.take = limit;
+      args.take = limit + 1;
       if (cursor) {
         args.cursor = { id: cursor };
       }

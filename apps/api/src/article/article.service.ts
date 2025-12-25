@@ -210,7 +210,13 @@ export class ArticleService {
   }
 
   private async rawSearch(query: ArticleSearchDto): Promise<Article[]> {
-    const { page, limit, include, search, sort, ...filters } = query;
+    const { page, limit, include, search, sort, cursor, ...filters } = query;
+
+    if (cursor) {
+      throw new BadRequestException(
+        'Cursor pagination is not supported with full-text search. Please, use page-based pagination.'
+      );
+    }
 
     const where = this.buildRawWhere(filters, search);
     const whereClause =

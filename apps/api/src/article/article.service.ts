@@ -341,10 +341,7 @@ export class ArticleService {
       },
       include:
         include.length > 0
-          ? include.reduce((acc, item) => {
-              acc[item] = true;
-              return acc;
-            }, {} as Prisma.ArticleInclude)
+          ? Object.fromEntries(include.map((item) => [item, true]))
           : undefined,
     });
   }
@@ -375,10 +372,7 @@ export class ArticleService {
       },
       include:
         include.length > 0
-          ? include.reduce((acc, item) => {
-              acc[item] = true;
-              return acc;
-            }, {} as Prisma.ArticleInclude)
+          ? Object.fromEntries(include.map((item) => [item, true]))
           : undefined,
     });
   }

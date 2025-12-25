@@ -17,7 +17,7 @@ export class CommentService {
     include: CommentInclude[] = []
   ): Prisma.CommentInclude | undefined {
     return include.length > 0
-      ? include.reduce((acc, item) => ({ ...acc, [item]: true }), {})
+      ? Object.fromEntries(include.map((item) => [item, true]))
       : undefined;
   }
 

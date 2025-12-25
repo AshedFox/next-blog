@@ -402,12 +402,7 @@ export class ArticleService {
 
     const updated = await this.prisma.article.update({
       where: { id },
-      data: {
-        ...input,
-        blocks: input.blocks
-          ? input.blocks.map((block) => ({ ...block }))
-          : undefined,
-      },
+      data: input,
     });
 
     if (input.blocks) {

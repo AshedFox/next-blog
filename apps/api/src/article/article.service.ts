@@ -93,14 +93,15 @@ export class ArticleService {
       input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
     );
 
-    let slug = slugify(input.title);
+    const rawSlug = slugify(input.title);
+    let slug = rawSlug.length > 0 ? rawSlug : 'untitled';
 
     const maxAttempts = 3;
 
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (attempt > 0) {
         slug = slugify(
-          `${input.title}-${randomBytes(6).toString('base64url')}`
+          `${rawSlug.length > 0 ? rawSlug : 'untitled'}-${randomBytes(6).toString('base64url')}`
         );
       }
       try {

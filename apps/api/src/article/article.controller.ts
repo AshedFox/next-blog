@@ -16,9 +16,6 @@ import z from 'zod';
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { MinRole } from '@/auth/decorators/min-role.decorator';
 import { Public } from '@/auth/decorators/public.decorator';
-import { CommentService } from '@/comment/comment.service';
-import { CommentSearchDto } from '@/comment/dto/comment-search.dto';
-import { CommentSearchResponseDto } from '@/comment/dto/comment-search-response.dto';
 import { DeletedMode } from '@/common/soft-delete/deleted-filter';
 
 import { ArticleService } from './article.service';
@@ -31,10 +28,7 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Controller('articles')
 export class ArticleController {
-  constructor(
-    private readonly articleService: ArticleService,
-    private readonly commentService: CommentService
-  ) {}
+  constructor(private readonly articleService: ArticleService) {}
 
   @Post()
   @ZodResponse({ type: ArticleDto, status: 200 })
@@ -179,26 +173,5 @@ export class ArticleController {
     }
 
     return this.articleService.enrich(await this.articleService.softDelete(id));
-  }
-
-  @Public()
-  @Get(':id/comments')
-  @ZodResponse({ type: CommentSearchResponseDto, status: 200 })
-  async getArticleComments(
-    @Param('id') id: string,
-    @Query() query: CommentSearchDto
-  ) {
-    const data = await this.commentService.searchByArticle(id, query);
-    const limit = query.limit;
-    const hasNextPage = data.length > limit;
-
-    return {
-      data: data.slice(0, limit),
-      meta: {
-        limit,
-        cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
-        hasNextPage,
-      },
-    };
   }
 }

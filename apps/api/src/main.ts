@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 import { AppModule } from './app.module';
+import { PrismaExceptionFilter } from './prisma/prisma.exception-filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -28,6 +29,8 @@ async function bootstrap() {
     jsonDocumentUrl: '/swagger/json',
     useGlobalPrefix: true,
   });
+
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   await app.listen(process.env.PORT ?? 3001);
 }

@@ -97,8 +97,6 @@ export class FileService {
   }
 
   async markAsDeleted(id: string): Promise<File> {
-    await this.getOne(id);
-
     return this.prisma.file.softDelete({
       where: { id },
     });
@@ -113,8 +111,6 @@ export class FileService {
   }
 
   async delete(id: string): Promise<File> {
-    await this.getOne(id);
-
     await this.storageService.delete(id);
 
     return this.prisma.file.delete({ where: { id } });

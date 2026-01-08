@@ -75,8 +75,6 @@ export class CommentService {
   }
 
   async update(id: string, input: UpdateCommentDto): Promise<Comment> {
-    await this.getOne(id);
-
     return this.prisma.comment.update({
       where: { id },
       data: input,
@@ -84,14 +82,10 @@ export class CommentService {
   }
 
   async restore(id: string): Promise<Comment> {
-    await this.getOne(id, DeletedMode.ONLY);
-
     return this.prisma.comment.restore({ where: { id } });
   }
 
   async softDelete(id: string): Promise<Comment> {
-    await this.getOne(id);
-
     return this.prisma.comment.softDelete({ where: { id } });
   }
 }

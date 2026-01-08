@@ -143,8 +143,6 @@ export class UserService {
   }
 
   async update(id: string, input: UpdateUserDto): Promise<User> {
-    await this.getOneById(id, false);
-
     const user = await this.prisma.user.update({ where: { id }, data: input });
 
     await this.cache.invalidate(id);
@@ -153,8 +151,6 @@ export class UserService {
   }
 
   async softDelete(id: string): Promise<User> {
-    await this.getOneById(id, false);
-
     const user = await this.prisma.user.softDelete({
       where: { id },
     });

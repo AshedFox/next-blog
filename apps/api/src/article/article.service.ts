@@ -422,14 +422,10 @@ export class ArticleService {
   }
 
   async restore(id: string): Promise<Article> {
-    await this.getOne(id, DeletedMode.ONLY);
-
     return this.prisma.article.restore({ where: { id } });
   }
 
   async changeStatus(id: string, status: ArticleStatus): Promise<Article> {
-    await this.getOne(id);
-
     return this.prisma.article.update({
       where: { id },
       data: { status },
@@ -437,8 +433,6 @@ export class ArticleService {
   }
 
   async softDelete(id: string): Promise<Article> {
-    await this.getOne(id);
-
     return this.prisma.article.softDelete({
       where: { id },
     });

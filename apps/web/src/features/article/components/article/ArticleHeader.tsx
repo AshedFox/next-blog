@@ -1,3 +1,4 @@
+import { ArticleWithRelationsDto } from '@workspace/contracts';
 import { Badge } from '@workspace/ui/components/badge';
 import { format } from 'date-fns';
 import { CalendarIcon, ClockIcon } from 'lucide-react';
@@ -6,21 +7,13 @@ import React from 'react';
 
 import { UserAvatar } from '@/features/user/client';
 
-import { getArticle, getReadingTime } from '../../server';
+import { getReadingTime } from '../../server';
 
 type Props = {
-  slugOrId: string;
+  article: ArticleWithRelationsDto<['author']>;
 };
 
-const ArticleHeader = async ({ slugOrId }: Props) => {
-  const result = await getArticle(slugOrId);
-
-  if (result.error) {
-    return null;
-  }
-
-  const article = result.data;
-
+const ArticleHeader = async ({ article }: Props) => {
   const readingTime = getReadingTime(article);
 
   return (

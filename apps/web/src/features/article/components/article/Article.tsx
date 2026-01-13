@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import ArticleBody from './ArticleBody';
 import ArticleBodySkeleton from './ArticleBodySkeleton';
 import ArticleComments from './ArticleComments';
+import ArticleCommentsSkeleton from './ArticleCommentsSkeleton';
 import ArticleHeader from './ArticleHeader';
 import ArticleSidebar from './ArticleSidebar';
 import ArticleSidebarSkeleton from './ArticleSidebarSkeleton';
@@ -31,7 +32,7 @@ export const Article = async ({ slugOrIdPromise }: Props) => {
           </Suspense>
         </div>
         <section className="col-span-3 @3xl:col-span-2">
-          <Suspense>
+          <Suspense fallback={<ArticleCommentsSkeleton />}>
             <ArticleComments slugOrId={slugOrId} />
           </Suspense>
         </section>

@@ -19,7 +19,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     notFound();
   }
 
-  return { title: result.data.title };
+  return {
+    title: result.data.title,
+    authors: [
+      {
+        name: result.data.author.name,
+        url: `/users/${result.data.author.username}`,
+      },
+    ],
+  };
 }
 
 const Page = ({ params }: Props) => {

@@ -1,12 +1,24 @@
 import z from 'zod';
 
-export function createArrayFilterSchema<
-  T extends z.ZodArray<z.ZodType<unknown, string>>,
->(schema: T) {
-  return z
-    .union([
-      z.string().transform((value) => value.split(',').map((s) => s.trim())),
-      z.array(z.string()),
-    ])
-    .pipe(schema);
+export function createArrayFilterSchema<O, I extends string[] | null>(
+  schema: z.ZodType<O, I>
+) {
+  return z.preprocess((value) => {
+    if (value === 'null' || value === null) {
+      return null;
+    }
+
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      if (value.trim() === '') {
+        return [];
+      }
+      return value.split(',').map((s) => s.trim());
+    }
+
+    return value;
+  }, schema);
 }

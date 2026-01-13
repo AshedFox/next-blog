@@ -1,3 +1,4 @@
+import { UserDto } from '@workspace/contracts';
 import { Button } from '@workspace/ui/components/button';
 import {
   Card,
@@ -11,21 +12,11 @@ import React from 'react';
 
 import { UserAvatar } from '@/features/user/client';
 
-import { getArticle } from '../../server';
-
 type Props = {
-  slugOrId: string;
+  author: UserDto;
 };
 
-const ArticleSidebar = async ({ slugOrId }: Props) => {
-  const result = await getArticle(slugOrId);
-
-  if (result.error) {
-    return null;
-  }
-
-  const author = result.data.author;
-
+const ArticleSidebar = async ({ author }: Props) => {
   return (
     <Card>
       <CardHeader>

@@ -2,9 +2,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React, { Suspense } from 'react';
 
-import { Article } from '@/features/article/client';
+import { Article, ArticleSkeleton } from '@/features/article/client';
 import { getArticle } from '@/features/article/server';
-import Spinner from '@/shared/components/Spinner';
 
 type Props = {
   params: Promise<{
@@ -20,14 +19,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     notFound();
   }
 
-  return { title: result.data.title };
+  return {
+    title: result.data.title,
+    authors: [
+      {
+        name: result.data.author.name,
+        url: `/users/${result.data.author.username}`,
+      },
+    ],
+  };
 }
 
 const Page = ({ params }: Props) => {
   const slugOrIdPromise = params.then((params) => params.slugOrId);
 
   return (
-    <Suspense fallback={<Spinner className="size-16" />}>
+    <Suspense fallback={<ArticleSkeleton />}>
       <Article slugOrIdPromise={slugOrIdPromise} />
     </Suspense>
   );

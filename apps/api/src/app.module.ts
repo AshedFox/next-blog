@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import { HttpExceptionFilter } from './common/http/http-exception-filter';
 import { FileModule } from './file/file.module';
+import { ListModule } from './list/list.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { UserModule } from './user/user.module';
@@ -21,6 +22,7 @@ import { UserModule } from './user/user.module';
     ArticleModule,
     CommentModule,
     FileModule,
+    ListModule,
     PrismaModule,
     RedisModule,
     UserModule,

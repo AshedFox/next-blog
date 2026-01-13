@@ -30,6 +30,7 @@ model User {
   deletedAt     DateTime?
   articles      Article[]
   comments      Comment[]
+  lists         List[]
   refreshTokens RefreshToken[]
 }
 
@@ -85,6 +86,7 @@ model Article {
   authorId     String                   @db.Uuid
   author       User                     @relation(fields: [authorId], references: [id])
   comments     Comment[]
+  listsItems   ListItem[]
 
   @@index([status, createdAt])
   @@index([authorId])
@@ -104,4 +106,35 @@ model Comment {
   replyToId String?   @db.Uuid
   replyTo   Comment?  @relation("Replies", fields: [replyToId], references: [id], onDelete: SetNull)
   replies   Comment[] @relation("Replies")
+}
+
+enum SystemListType {
+  FAVORITE
+  READ_LATER
+}
+
+model List {
+  id         String          @id @default(uuid()) @db.Uuid
+  name       String          @db.VarChar(127)
+  systemType SystemListType?
+  isPublic   Boolean         @default(false)
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  userId     String          @db.Uuid
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items      ListItem[]
+
+  @@unique([userId, systemType])
+}
+
+model ListItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  listId    String   @db.Uuid
+  list      List     @relation(fields: [listId], references: [id], onDelete: Cascade)
+  articleId String   @db.Uuid
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, listId])
 }

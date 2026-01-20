@@ -9,8 +9,16 @@ import {
 } from './features/auth/server';
 import { serverEnv } from './lib/env/server';
 
-const PROTECTED_ROUTE_PREFIXES = ['/profile'];
-const GUEST_ONLY_PREFIXES = ['/login', '/sign-up'];
+const PROTECTED_PATTERNS = [
+  /^\/profile/,
+  /^\/articles\/new$/,
+  /^\/articles\/[^/]+\/edit$/,
+];
+
+const GUEST_ONLY_PATTERNS = [/^\/login$/, /^\/sign-up$/];
+
+const isMatch = (path: string, patterns: RegExp[]) =>
+  patterns.some((pattern) => pattern.test(path));
 
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
@@ -18,12 +26,8 @@ export async function proxy(req: NextRequest) {
   const accessToken = req.cookies.get(serverEnv.ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = req.cookies.get(serverEnv.REFRESH_TOKEN_COOKIE)?.value;
 
-  const isProtected = PROTECTED_ROUTE_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
-  const isGuestOnly = GUEST_ONLY_PREFIXES.some((prefix) =>
-    pathname.startsWith(prefix)
-  );
+  const isProtected = isMatch(pathname, PROTECTED_PATTERNS);
+  const isGuestOnly = isMatch(pathname, GUEST_ONLY_PATTERNS);
 
   const { isValid, needsRefresh } = accessToken
     ? checkAccessToken(accessToken)

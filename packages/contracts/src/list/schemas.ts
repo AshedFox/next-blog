@@ -93,5 +93,5 @@ export const listGetOneSchema = z.object({
 export const listInclusionStateSchema = z.object({
   isFavorite: z.boolean(),
   isReadLater: z.boolean(),
-  customListsIds: z.array(z.uuid()),
+  includedInCustomLists: z.array(baseListSchema),
 });

@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   ListGetOneDto,
   ListInclude,
-  ListInclusionStateDto,
   ListSearchDto,
   UpdateListDto,
 } from '@workspace/contracts';
@@ -10,7 +9,7 @@ import {
 import { List, Prisma } from '@/prisma/generated/client';
 import { PrismaService } from '@/prisma/prisma.service';
 
-import { CreateListInput } from '../list.types';
+import { CreateListInput, ListInclusionState } from '../list.types';
 
 @Injectable()
 export class ListService {
@@ -156,22 +155,18 @@ export class ListService {
   async getInclusionState(
     userId: string,
     articleId: string
-  ): Promise<ListInclusionStateDto> {
+  ): Promise<ListInclusionState> {
     const lists = await this.prisma.list.findMany({
       where: {
         userId,
         items: { some: { articleId } },
       },
-      select: {
-        id: true,
-        systemType: true,
-      },
     });
 
-    const result: ListInclusionStateDto = {
+    const result: ListInclusionState = {
       isFavorite: false,
       isReadLater: false,
-      customListsIds: [],
+      includedInCustomLists: [],
     };
 
     for (const list of lists) {
@@ -183,7 +178,7 @@ export class ListService {
           result.isReadLater = true;
           break;
         default:
-          result.customListsIds.push(list.id);
+          result.includedInCustomLists.push(list);
           break;
       }
     }

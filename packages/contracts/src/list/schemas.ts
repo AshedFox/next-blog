@@ -77,6 +77,9 @@ export const listSearchSchema = z.object({
   )
     .optional()
     .catch(undefined),
+  excludeArticlesIds: createArrayFilterSchema(z.array(z.uuid()))
+    .optional()
+    .catch(undefined),
 });
 
 export const listSearchResponseSchema =

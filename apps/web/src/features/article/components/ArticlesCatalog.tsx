@@ -1,4 +1,4 @@
-import { articleSearchSchema, PaginatedMetaOffset } from '@workspace/contracts';
+import { PaginatedMetaOffset } from '@workspace/contracts';
 import React from 'react';
 
 import { Paginator } from '@/shared/components/Paginator';
@@ -14,12 +14,12 @@ type Props = {
 
 export const ArticlesCatalog = async ({ searchParamsPromise }: Props) => {
   const searchParams = await searchParamsPromise;
-  const search = await articleSearchSchema.parseAsync({
+
+  const { data, error } = await searchArticles({
     ...searchParams,
+    page: Number(searchParams.page ?? 1),
     include: ['author'],
   });
-
-  const { data, error } = await searchArticles(search);
 
   if (error) {
     throw new Error(error.message);

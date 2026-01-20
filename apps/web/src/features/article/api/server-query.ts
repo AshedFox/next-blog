@@ -14,7 +14,7 @@ export async function getArticle(
   return fetchArticle(slugOrId, ['author']);
 }
 
-export async function searchArticles(query: ArticleSearch) {
+export async function searchArticles(query: Partial<ArticleSearch>) {
   'use cache';
   cacheTag('articles');
 

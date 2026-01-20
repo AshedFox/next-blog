@@ -5,6 +5,7 @@ import {
   ArticleInclude,
   ArticleSearch,
   ArticleSearchResponseDto,
+  articleSearchSchema,
   ArticleWithRelationsDto,
   CreateArticleDto,
   UpdateArticleDto,
@@ -35,8 +36,9 @@ export function fetchArticle<R extends readonly ArticleInclude[]>(
   );
 }
 
-export function fetchArticleList(query: ArticleSearch) {
-  const searchParams = createArticleSearchParams(query);
+export async function fetchArticleList(query: Partial<ArticleSearch>) {
+  const search = await articleSearchSchema.parseAsync(query);
+  const searchParams = createArticleSearchParams(search);
 
   return serverApi.get<ArticleSearchResponseDto>(
     `/api/articles?${searchParams.toString()}`

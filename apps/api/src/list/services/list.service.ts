@@ -69,6 +69,46 @@ export class ListService {
     {
       limit,
       page,
+      cursor,
+      sort,
+      include,
+      search,
+      itemsLimit,
+      systemType,
+    }: ListSearchDto
+  ) {
+    const where: Prisma.ListWhereInput = {
+      userId,
+      name: search && { contains: search },
+      systemType: systemType && { in: systemType },
+    };
+    const args: Prisma.ListFindManyArgs = {
+      where,
+      orderBy: sort,
+      include: include && this.mapInclude(include, itemsLimit),
+    };
+
+    if (page) {
+      args.take = limit;
+      args.skip = (page - 1) * limit;
+    } else {
+      args.take = limit + 1;
+      if (cursor) {
+        args.cursor = { id: cursor };
+      }
+    }
+
+    return this.prisma.list
+      .findMany(args)
+      .then((lists) => lists.map((list) => this.mapStats(list)));
+  }
+
+  async searchAndCountByUser(
+    userId: string,
+    {
+      limit,
+      page,
+      cursor,
       sort,
       include,
       search,
@@ -81,14 +121,24 @@ export class ListService {
       name: search && { contains: search },
       systemType: systemType && { in: systemType },
     };
+    const args: Prisma.ListFindManyArgs = {
+      where,
+      orderBy: sort,
+      include: include && this.mapInclude(include, itemsLimit),
+    };
+
+    if (page) {
+      args.take = limit;
+      args.skip = (page - 1) * limit;
+    } else {
+      args.take = limit + 1;
+      if (cursor) {
+        args.cursor = { id: cursor };
+      }
+    }
+
     const [data, count] = await this.prisma.$transaction([
-      this.prisma.list.findMany({
-        where,
-        take: limit,
-        skip: (page - 1) * limit,
-        orderBy: sort,
-        include: include && this.mapInclude(include, itemsLimit),
-      }),
+      this.prisma.list.findMany(args),
       this.prisma.list.count({ where }),
     ]);
 

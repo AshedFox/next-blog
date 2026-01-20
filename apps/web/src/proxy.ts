@@ -33,19 +33,18 @@ export async function proxy(req: NextRequest) {
     ? checkAccessToken(accessToken)
     : {};
 
-  if ((!accessToken || !isValid || needsRefresh) && refreshToken) {
+  let isAuthorized = isValid;
+  let res = NextResponse.next();
+
+  if ((!isValid || needsRefresh) && refreshToken) {
     const { data, error } = await refresh(refreshToken);
 
-    const res = error
-      ? isProtected
-        ? NextResponse.redirect(new URL('/login', req.url))
-        : NextResponse.next()
-      : isGuestOnly
-        ? NextResponse.redirect(new URL('/', req.url))
-        : NextResponse.next();
-
     if (error) {
+      if (isProtected) {
+        res = NextResponse.redirect(new URL('/login', req.url));
+      }
       clearRefreshToken(res.cookies);
+      isAuthorized = false;
     } else {
       setAccessToken(
         res.cookies,
@@ -57,20 +56,22 @@ export async function proxy(req: NextRequest) {
         data.refreshToken,
         new Date(data.refreshTokenExpiresAt)
       );
+      isAuthorized = true;
     }
-
-    return res;
   }
 
-  if (isGuestOnly && accessToken) {
+  if (isGuestOnly && isAuthorized) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-  if (isProtected && !accessToken) {
+  if (isProtected && !isAuthorized) {
+    if (res.status === 307 || res.status === 302) {
+      return res;
+    }
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  return NextResponse.next();
+  return res;
 }
 
 export const config = {

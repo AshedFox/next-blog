@@ -2,6 +2,8 @@ import { ArticleBlockType } from '@workspace/contracts';
 import { notFound } from 'next/navigation';
 import React from 'react';
 
+import { getMe } from '@/features/user/server';
+
 import { getArticle } from '../server';
 import { EditArticleForm } from './EditArticleForm';
 
@@ -11,9 +13,12 @@ type Props = {
 
 export const EditArticle = async ({ slugOrIdPromise }: Props) => {
   const slugOrId = await slugOrIdPromise;
-  const result = await getArticle(slugOrId);
+  const [result, currentUser] = await Promise.all([
+    getArticle(slugOrId),
+    getMe(),
+  ]);
 
-  if (result.error) {
+  if (result.error || currentUser?.id !== result.data.authorId) {
     notFound();
   }
 

@@ -24,5 +24,5 @@ export const cursorPaginationSchema = z.object({
 });
 
 export const paginationSchema = cursorPaginationSchema.extend({
-  page: offsetPaginationSchema.shape.page.optional(),
+  page: z.coerce.number().min(1).optional().catch(undefined),
 });

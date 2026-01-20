@@ -17,6 +17,7 @@ export const ArticlesCatalog = async ({ searchParamsPromise }: Props) => {
 
   const { data, error } = await searchArticles({
     ...searchParams,
+    page: Number(searchParams.page ?? 1),
     include: ['author'],
   });
 

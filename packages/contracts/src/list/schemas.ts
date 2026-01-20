@@ -6,7 +6,7 @@ import {
   createPaginatedResponseSchema,
   createSortSchema,
   datetimeOutSchema,
-  offsetPaginationSchema,
+  paginationSchema,
 } from '../common';
 import { baseListItemSchema } from '../list-item';
 import { baseUserSchema } from '../user/schemas';
@@ -65,7 +65,7 @@ export function createListWithRelationsSchema<T extends readonly ListInclude[]>(
 }
 
 export const listSearchSchema = z.object({
-  ...offsetPaginationSchema.shape,
+  ...paginationSchema.shape,
   search: z.string().min(1).max(120).optional(),
   sort: createSortSchema(['name', 'createdAt'])
     .optional()

@@ -19,7 +19,22 @@ export class UserListController {
     @Query() query: ListSearchDto
   ) {
     const { page, limit } = query;
-    const [data, count] = await this.userListService.searchByUser(
+
+    if (!page) {
+      const data = await this.userListService.searchByUser(userId, query);
+      const hasNextPage = data.length > limit;
+
+      return {
+        data: data.slice(0, limit),
+        meta: {
+          limit,
+          cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
+          hasNextPage,
+        },
+      };
+    }
+
+    const [data, count] = await this.userListService.searchAndCountByUser(
       userId,
       query
     );

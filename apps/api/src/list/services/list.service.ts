@@ -75,12 +75,16 @@ export class ListService {
       search,
       itemsLimit,
       systemType,
+      excludeArticlesIds,
     }: ListSearchDto
   ) {
     const where: Prisma.ListWhereInput = {
       userId,
       name: search && { contains: search },
       systemType: systemType && { in: systemType },
+      items: excludeArticlesIds && {
+        none: { articleId: { in: excludeArticlesIds } },
+      },
     };
     const args: Prisma.ListFindManyArgs = {
       where,
@@ -114,12 +118,16 @@ export class ListService {
       search,
       itemsLimit,
       systemType,
+      excludeArticlesIds,
     }: ListSearchDto
   ): Promise<[List[], number]> {
     const where: Prisma.ListWhereInput = {
       userId,
       name: search && { contains: search },
       systemType: systemType && { in: systemType },
+      items: excludeArticlesIds && {
+        none: { articleId: { in: excludeArticlesIds } },
+      },
     };
     const args: Prisma.ListFindManyArgs = {
       where,

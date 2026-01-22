@@ -33,10 +33,6 @@ const ArticleComments = async ({ articleId }: Props) => {
             <span className="text-sm text-muted-foreground">
               Failed to load comments
             </span>
-          ) : data.data.length === 0 ? (
-            <span className="text-sm text-muted-foreground">
-              No comments yet...
-            </span>
           ) : (
             <CommentsList
               articleId={articleId}

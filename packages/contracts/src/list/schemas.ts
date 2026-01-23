@@ -15,10 +15,12 @@ import { ListDto } from './types';
 
 export const createListSchema = z.object({
   name: z.string().min(1).max(120),
+  isPublic: z.boolean().optional().default(false),
 });
 
 export const updateListSchema = z.object({
   name: z.string().min(1).max(120).optional(),
+  isPublic: z.boolean().optional(),
 });
 
 export const baseListSchema = z.object({

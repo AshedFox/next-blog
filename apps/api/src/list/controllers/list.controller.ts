@@ -11,6 +11,7 @@ import {
 import { ZodResponse } from 'nestjs-zod';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
+import { OptionalAuth } from '@/auth/decorators/optional-auth.decorator';
 
 import { CreateListDto } from '../dto/create-list.dto';
 import { ListDto } from '../dto/list.dto';
@@ -28,21 +29,30 @@ export class ListController {
     return this.listService.create({ ...input, userId });
   }
 
+  @OptionalAuth()
   @Get(':id')
   @ZodResponse({ type: ListDto, status: 200 })
-  getOne(@Param('id') id: string, @Query() query: ListGetOneDto) {
-    return this.listService.getOne(id, query);
+  getOne(
+    @Param('id') id: string,
+    @Query() query: ListGetOneDto,
+    @CurrentUser('id') userId?: string
+  ) {
+    return this.listService.getOne(id, query, userId);
   }
 
   @Patch(':id')
   @ZodResponse({ type: ListDto, status: 200 })
-  update(@Param('id') id: string, @Body() input: UpdateListDto) {
-    return this.listService.update(id, input);
+  update(
+    @Param('id') id: string,
+    @Body() input: UpdateListDto,
+    @CurrentUser('id') userId: string
+  ) {
+    return this.listService.update(id, input, userId);
   }
 
   @Delete(':id')
   @ZodResponse({ type: ListDto, status: 200 })
-  delete(@Param('id') id: string) {
-    return this.listService.delete(id);
+  delete(@Param('id') id: string, @CurrentUser('id') userId: string) {
+    return this.listService.delete(id, userId);
   }
 }

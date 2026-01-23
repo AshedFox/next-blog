@@ -21,7 +21,11 @@ export class UserListController {
     const { page, limit } = query;
 
     if (!page) {
-      const data = await this.userListService.searchByUser(userId, query);
+      const data = await this.userListService.searchByUser(
+        userId,
+        query,
+        userId
+      );
       const hasNextPage = data.length > limit;
 
       return {
@@ -36,7 +40,8 @@ export class UserListController {
 
     const [data, count] = await this.userListService.searchAndCountByUser(
       userId,
-      query
+      query,
+      userId
     );
     const totalPages = Math.ceil(count / limit);
 

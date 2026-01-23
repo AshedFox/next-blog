@@ -46,17 +46,22 @@ export class ListService {
 
   async findOne(
     id: string,
-    { include, itemsLimit }: ListGetOneDto
+    { include, itemsLimit }: ListGetOneDto,
+    currentUserId?: string
   ): Promise<List | null> {
     const list = await this.prisma.list.findUnique({
-      where: { id },
+      where: { id, isPublic: currentUserId !== id ? true : undefined },
       include: include && this.mapInclude(include, itemsLimit),
     });
     return list ? this.mapStats(list) : null;
   }
 
-  async getOne(id: string, query: ListGetOneDto): Promise<List> {
-    const list = await this.findOne(id, query);
+  async getOne(
+    id: string,
+    query: ListGetOneDto,
+    currentUserId?: string
+  ): Promise<List> {
+    const list = await this.findOne(id, query, currentUserId);
     if (!list) {
       throw new NotFoundException('List not found');
     }
@@ -64,7 +69,7 @@ export class ListService {
   }
 
   async searchByUser(
-    userId: string,
+    targetUserId: string,
     {
       limit,
       page,
@@ -75,11 +80,13 @@ export class ListService {
       itemsLimit,
       systemType,
       excludeArticlesIds,
-    }: ListSearchDto
+    }: ListSearchDto,
+    currentUserId?: string
   ) {
     const where: Prisma.ListWhereInput = {
-      userId,
-      name: search && { contains: search },
+      userId: targetUserId,
+      isPublic: currentUserId !== targetUserId ? true : undefined,
+      name: search ? { contains: search } : undefined,
       systemType: systemType && { in: systemType },
       items: excludeArticlesIds && {
         none: { articleId: { in: excludeArticlesIds } },
@@ -107,7 +114,7 @@ export class ListService {
   }
 
   async searchAndCountByUser(
-    userId: string,
+    targetUserId: string,
     {
       limit,
       page,
@@ -118,11 +125,13 @@ export class ListService {
       itemsLimit,
       systemType,
       excludeArticlesIds,
-    }: ListSearchDto
+    }: ListSearchDto,
+    currentUserId?: string
   ): Promise<[List[], number]> {
     const where: Prisma.ListWhereInput = {
-      userId,
-      name: search && { contains: search },
+      userId: targetUserId,
+      isPublic: currentUserId !== targetUserId ? true : undefined,
+      name: search ? { contains: search } : undefined,
       systemType: systemType && { in: systemType },
       items: excludeArticlesIds && {
         none: { articleId: { in: excludeArticlesIds } },
@@ -186,16 +195,18 @@ export class ListService {
     return result;
   }
 
-  async update(id: string, input: UpdateListDto): Promise<List> {
-    return this.mapStats(
-      await this.prisma.list.update({
-        where: { id },
-        data: input,
-      })
-    );
+  async update(
+    id: string,
+    input: UpdateListDto,
+    currentUserId: string
+  ): Promise<List> {
+    return this.prisma.list.update({
+      where: { id, userId: currentUserId },
+      data: input,
+    });
   }
 
-  async delete(id: string): Promise<List> {
-    return this.mapStats(await this.prisma.list.delete({ where: { id } }));
+  async delete(id: string, currentUserId: string): Promise<List> {
+    return this.prisma.list.delete({ where: { id, userId: currentUserId } });
   }
 }

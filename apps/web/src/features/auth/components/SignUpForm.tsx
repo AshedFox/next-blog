@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SignUpDto, signUpSchema } from '@workspace/contracts';
-import { Button, buttonVariants } from '@workspace/ui/components/button';
+import { buttonVariants } from '@workspace/ui/components/button';
 import {
   Card,
   CardContent,
@@ -19,11 +19,10 @@ import {
 import { Input } from '@workspace/ui/components/input';
 import { cn } from '@workspace/ui/lib/utils';
 import Link from 'next/link';
-import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import Spinner from '@/shared/components/Spinner';
+import { SubmitButton } from '@/shared/components/SubmitButton';
 
 import { signUpAction } from '../actions/sign-up';
 
@@ -119,15 +118,13 @@ export const SignUpForm = () => {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="submit" form="sign-up-form">
-            {form.formState.isSubmitting ? (
-              <>
-                <Spinner /> Signing Up...
-              </>
-            ) : (
-              'Sign Up'
-            )}
-          </Button>
+          <SubmitButton
+            isSubmitting={form.formState.isSubmitting}
+            submittingText="Signing Up..."
+            form="sign-up-form"
+          >
+            Sign Up
+          </SubmitButton>
           <Link
             className={cn(
               buttonVariants({ variant: 'link', size: 'sm' }),

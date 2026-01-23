@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginDto, loginSchema } from '@workspace/contracts';
-import { Button, buttonVariants } from '@workspace/ui/components/button';
+import { buttonVariants } from '@workspace/ui/components/button';
 import {
   Card,
   CardContent,
@@ -23,7 +23,7 @@ import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-import Spinner from '@/shared/components/Spinner';
+import { SubmitButton } from '@/shared/components/SubmitButton';
 
 import { loginAction } from '../actions/login';
 
@@ -98,15 +98,13 @@ export const LoginForm = () => {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="submit" form="login-form">
-            {form.formState.isSubmitting ? (
-              <>
-                <Spinner /> Logging In...
-              </>
-            ) : (
-              'Login'
-            )}
-          </Button>
+          <SubmitButton
+            isSubmitting={form.formState.isSubmitting}
+            submittingText="Logging In..."
+            form="login-form"
+          >
+            Login
+          </SubmitButton>
           <Link
             className={cn(
               buttonVariants({ variant: 'link', size: 'sm' }),

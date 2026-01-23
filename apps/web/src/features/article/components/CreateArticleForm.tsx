@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 
 import { Editor } from '@/features/editor/client';
 import Spinner from '@/shared/components/Spinner';
+import { SubmitButton } from '@/shared/components/SubmitButton';
 
 import { createArticleAction } from '../actions/create-article';
 import { ArticleFormData } from '../types';
@@ -149,15 +150,13 @@ export const CreateArticleForm = () => {
           <Button type="reset" variant="outline" onClick={handleReset}>
             Reset
           </Button>
-          <Button type="submit" form="create-article-form">
-            {form.formState.isSubmitting ? (
-              <>
-                <Spinner /> Creating article...
-              </>
-            ) : (
-              'Create'
-            )}
-          </Button>
+          <SubmitButton
+            isSubmitting={form.formState.isSubmitting}
+            submittingText="Creating article..."
+            form="create-article-form"
+          >
+            Create
+          </SubmitButton>
         </Field>
       </CardFooter>
     </Card>

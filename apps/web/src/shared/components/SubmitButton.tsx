@@ -8,6 +8,7 @@ type Props = {
   disabled?: boolean;
   submittingText?: string;
   children: ReactNode;
+  form?: string;
 };
 
 export const SubmitButton = ({
@@ -15,9 +16,10 @@ export const SubmitButton = ({
   isSubmitting,
   disabled = false,
   submittingText = 'Loading...',
+  form,
 }: Props) => {
   return (
-    <Button type="submit" disabled={isSubmitting || disabled}>
+    <Button form={form} type="submit" disabled={isSubmitting || disabled}>
       {isSubmitting ? (
         <>
           <Spinner /> {submittingText}

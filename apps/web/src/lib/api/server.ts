@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 import { getAccessToken } from '@/features/auth/server';
 
-import { clientEnv } from '../env/client';
+import { getServerEnv } from '../env/server';
 import { ApiFetchResult } from './types';
 
 type FetchOptions = RequestInit & {
@@ -34,7 +34,7 @@ export async function apiFetch<T = unknown>(
       }
     }
 
-    const res = await fetch(`${clientEnv.NEXT_PUBLIC_BACKEND_URL}${path}`, {
+    const res = await fetch(`${getServerEnv().BACKEND_INTERNAL_URL}${path}`, {
       ...init,
       headers,
     });

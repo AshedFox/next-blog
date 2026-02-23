@@ -1,7 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": ["FRONTEND_APP_URL", "PORT"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

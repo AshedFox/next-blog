@@ -4,17 +4,18 @@ import { jwtDecode } from 'jwt-decode';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
-import { serverEnv } from '@/lib/env/server';
+import { getServerEnv } from '@/lib/env/server';
 
 export async function setAccessToken(
   cookieStore: Awaited<ReturnType<typeof cookies>> | NextResponse['cookies'],
   token: string,
   expires: Date
 ) {
-  cookieStore.set(serverEnv.ACCESS_TOKEN_COOKIE, token, {
+  const env = getServerEnv();
+  cookieStore.set(env.ACCESS_TOKEN_COOKIE, token, {
     expires,
     httpOnly: true,
-    secure: serverEnv.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   });
@@ -25,10 +26,11 @@ export async function setRefreshToken(
   token: string,
   expires: Date
 ) {
-  cookieStore.set(serverEnv.REFRESH_TOKEN_COOKIE, token, {
+  const env = getServerEnv();
+  cookieStore.set(env.REFRESH_TOKEN_COOKIE, token, {
     expires,
     httpOnly: true,
-    secure: serverEnv.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
   });
@@ -37,25 +39,25 @@ export async function setRefreshToken(
 export async function getAccessToken(
   cookieStore: Awaited<ReturnType<typeof cookies>> | NextRequest['cookies']
 ) {
-  return cookieStore.get(serverEnv.ACCESS_TOKEN_COOKIE)?.value;
+  return cookieStore.get(getServerEnv().ACCESS_TOKEN_COOKIE)?.value;
 }
 
 export async function getRefreshToken(
   cookieStore: Awaited<ReturnType<typeof cookies>> | NextRequest['cookies']
 ) {
-  return cookieStore.get(serverEnv.REFRESH_TOKEN_COOKIE)?.value;
+  return cookieStore.get(getServerEnv().REFRESH_TOKEN_COOKIE)?.value;
 }
 
 export async function clearAccessToken(
   cookieStore: Awaited<ReturnType<typeof cookies>> | NextResponse['cookies']
 ) {
-  cookieStore.delete(serverEnv.ACCESS_TOKEN_COOKIE);
+  cookieStore.delete(getServerEnv().ACCESS_TOKEN_COOKIE);
 }
 
 export async function clearRefreshToken(
   cookieStore: Awaited<ReturnType<typeof cookies>> | NextResponse['cookies']
 ) {
-  cookieStore.delete(serverEnv.REFRESH_TOKEN_COOKIE);
+  cookieStore.delete(getServerEnv().REFRESH_TOKEN_COOKIE);
 }
 
 export function checkAccessToken(token: string): {
@@ -71,7 +73,8 @@ export function checkAccessToken(token: string): {
     return {
       isValid: timeToExpiry > 0,
       needsRefresh:
-        timeToExpiry < serverEnv.TOKEN_REFRESH_THRESHOLD && timeToExpiry > 0,
+        timeToExpiry < getServerEnv().TOKEN_REFRESH_THRESHOLD &&
+        timeToExpiry > 0,
     };
   } catch {
     return {

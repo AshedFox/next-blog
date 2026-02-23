@@ -11,7 +11,7 @@ import { REDIS_CLIENT } from './redis.constants';
       provide: REDIS_CLIENT,
       inject: [ConfigService],
       useFactory: (config: ConfigService) =>
-        new Redis(config.getOrThrow<string>('REDIS_URL')),
+        new Redis(config.getOrThrow<string>('REDIS_URL'), { family: 4 }),
     },
   ],
   exports: [REDIS_CLIENT],

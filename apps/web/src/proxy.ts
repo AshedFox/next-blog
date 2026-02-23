@@ -7,7 +7,7 @@ import {
   setAccessToken,
   setRefreshToken,
 } from './features/auth/server';
-import { serverEnv } from './lib/env/server';
+import { getServerEnv } from './lib/env/server';
 
 const PROTECTED_PATTERNS = [
   /^\/profile/,
@@ -23,8 +23,9 @@ const isMatch = (path: string, patterns: RegExp[]) =>
 export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
-  const accessToken = req.cookies.get(serverEnv.ACCESS_TOKEN_COOKIE)?.value;
-  const refreshToken = req.cookies.get(serverEnv.REFRESH_TOKEN_COOKIE)?.value;
+  const env = getServerEnv();
+  const accessToken = req.cookies.get(env.ACCESS_TOKEN_COOKIE)?.value;
+  const refreshToken = req.cookies.get(env.REFRESH_TOKEN_COOKIE)?.value;
 
   const isProtected = isMatch(pathname, PROTECTED_PATTERNS);
   const isGuestOnly = isMatch(pathname, GUEST_ONLY_PATTERNS);

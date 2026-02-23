@@ -9,7 +9,7 @@ import {
   setAccessToken,
   setRefreshToken,
 } from '@/features/auth/server';
-import { clientEnv } from '@/lib/env/client';
+import { getServerEnv } from '@/lib/env/server';
 
 type Context = {
   params: Promise<{ slug: string[] }>;
@@ -53,7 +53,7 @@ async function proxyRequest(
 
   const backendUrl = new URL(
     `/${slug.join('/')}`,
-    clientEnv.NEXT_PUBLIC_BACKEND_URL
+    getServerEnv().BACKEND_INTERNAL_URL
   );
 
   request.nextUrl.searchParams.forEach((value, key) => {

@@ -4,6 +4,7 @@ import {
   DeleteObjectsCommand,
   HeadBucketCommand,
   HeadObjectCommand,
+  PutBucketPolicyCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -18,15 +19,35 @@ import { S3_CLIENT_TOKEN } from './storage.constants';
 @Injectable()
 export class StorageService implements OnModuleInit {
   private bucket: string;
-  private endpoint: string;
+  private publicEndpoint: string;
+  private readonly presigner: S3Client;
 
   constructor(
     @Inject(S3_CLIENT_TOKEN) private readonly s3: S3Client,
     configService: ConfigService
   ) {
     this.bucket = configService.getOrThrow<string>('STORAGE_BUCKET');
-    this.endpoint = configService.getOrThrow<string>('STORAGE_ENDPOINT');
+
+    const endpoint = configService.getOrThrow<string>('STORAGE_ENDPOINT');
+    this.publicEndpoint =
+      configService.getOrThrow<string>('STORAGE_PUBLIC_URL');
+
+    if (this.publicEndpoint !== endpoint) {
+      this.presigner = new S3Client({
+        endpoint: this.publicEndpoint,
+        forcePathStyle: true,
+        region: configService.getOrThrow<string>('STORAGE_REGION'),
+        credentials: {
+          accessKeyId: configService.getOrThrow<string>('STORAGE_ACCESS_KEY'),
+          secretAccessKey:
+            configService.getOrThrow<string>('STORAGE_SECRET_KEY'),
+        },
+      });
+    } else {
+      this.presigner = this.s3;
+    }
   }
+
   async onModuleInit() {
     await this.ensureBucketExists();
   }
@@ -37,6 +58,24 @@ export class StorageService implements OnModuleInit {
     } catch {
       await this.s3.send(new CreateBucketCommand({ Bucket: this.bucket }));
     }
+
+    await this.s3.send(
+      new PutBucketPolicyCommand({
+        Bucket: this.bucket,
+        Policy: JSON.stringify({
+          Version: '2012-10-17',
+          Statement: [
+            {
+              Sid: 'PublicRead',
+              Effect: 'Allow',
+              Principal: '*',
+              Action: ['s3:GetObject'],
+              Resource: [`arn:aws:s3:::${this.bucket}/*`],
+            },
+          ],
+        }),
+      })
+    );
   }
 
   getUploadUrl(
@@ -49,11 +88,11 @@ export class StorageService implements OnModuleInit {
       Key: key,
       ContentType: mimetype,
     });
-    return getSignedUrl(this.s3, command, { expiresIn });
+    return getSignedUrl(this.presigner, command, { expiresIn });
   }
 
   getPublicUrl(key: string) {
-    return new URL(`${this.bucket}/${key}`, this.endpoint).href;
+    return new URL(`${this.bucket}/${key}`, this.publicEndpoint).href;
   }
 
   async upload(

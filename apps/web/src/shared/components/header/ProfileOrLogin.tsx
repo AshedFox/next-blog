@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { ProfileDropdown } from '@/features/user/client';
-import { getMe } from '@/features/user/server';
+import { ProfileDropdown } from '@/modules/user/client';
+import { getMe } from '@/modules/user/server';
 
 import NavLink from './NavLink';
 

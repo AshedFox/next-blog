@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import { CreateArticleForm } from '@/features/article/client';
+import { CreateArticleForm } from '@/modules/article/client';
 
 export const metadata: Metadata = {
   title: 'New Article',

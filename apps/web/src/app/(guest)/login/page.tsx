@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import React from 'react';
 
-import { LoginForm } from '@/features/auth/client';
+import { LoginForm } from '@/modules/auth/client';
 
 export const metadata: Metadata = {
   title: 'Login',

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getServerEnv } from './lib/env/server';
 import {
   checkAccessToken,
   clearRefreshToken,
   refresh,
   setAccessToken,
   setRefreshToken,
-} from './features/auth/server';
-import { getServerEnv } from './lib/env/server';
+} from './modules/auth/server';
 
 const PROTECTED_PATTERNS = [
   /^\/profile/,

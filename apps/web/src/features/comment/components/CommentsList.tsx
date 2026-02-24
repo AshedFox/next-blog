@@ -57,10 +57,7 @@ export const CommentsList = ({
   });
 
   return (
-    <div
-      ref={parentRef}
-      className={'overflow-y-auto [scrollbar-gutter:stable] max-h-240 p-1'}
-    >
+    <div ref={parentRef} className="overflow-y-auto max-h-240">
       {comments.length > 0 ? (
         <div
           className="w-full relative"

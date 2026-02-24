@@ -2,7 +2,7 @@ import { HeroSection } from '@/shared/components/hero';
 
 const Page = () => {
   return (
-    <main className="grow min-h-screen">
+    <main className="grow flex flex-col">
       <HeroSection />
     </main>
   );

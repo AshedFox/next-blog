@@ -26,7 +26,6 @@ type Props = {
 };
 
 export const EditCommentDialog = ({ id, initialData }: Props) => {
-  console.log(initialData);
   const [open, setOpen] = useState(false);
   const { form, isPending, isDirty, onSubmit } = useEditComment(
     id,

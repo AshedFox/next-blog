@@ -27,7 +27,7 @@ export class UserController {
   @Get('me')
   @ZodResponse({ type: UserDto })
   getMe(@CurrentUser('id') userId: string, @Query() query: UserGetOneDto) {
-    return this.userService.getOneById(userId, undefined, query.include);
+    return this.userService.getOneById(userId, undefined, query);
   }
 
   @Patch('me')
@@ -57,7 +57,7 @@ export class UserController {
     @Param('id', ParseUUIDPipe) id: string,
     @Query() query: UserGetOneDto
   ) {
-    return this.userService.getOneById(id, undefined, query.include);
+    return this.userService.getOneById(id, undefined, query);
   }
 
   @MinRole(UserRole.ADMIN)

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
-import type { UserInclude } from '@workspace/contracts';
+import type { UserDto, UserInclude } from '@workspace/contracts';
 
 import { HashService } from '@/hash/hash.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -13,6 +13,7 @@ import { UsernameGeneratorService } from '@/username-generator/username-generato
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserGetOneDto } from './dto/user-get-one.dto';
 import { UserCacheService } from './user-cache.service';
 
 @Injectable()
@@ -23,6 +24,35 @@ export class UserService {
     private readonly hashService: HashService,
     private readonly cache: UserCacheService
   ) {}
+
+  private mapInclude(
+    include: UserInclude[],
+    articlesLimit: number,
+    commentsLimit: number,
+    listsLimit: number
+  ): Prisma.UserInclude {
+    return {
+      _count: {
+        select: {
+          articles: include?.includes('articlesCount'),
+          comments: include?.includes('commentsCount'),
+          lists: include?.includes('listsCount'),
+        },
+      },
+      articles: include?.includes('articles') && { take: articlesLimit },
+      comments: include?.includes('comments') && { take: commentsLimit },
+      lists: include?.includes('lists') && { take: listsLimit },
+    };
+  }
+
+  private mapStats(
+    list: User & { _count?: UserDto['stats'] }
+  ): User & { stats?: UserDto['stats'] } {
+    return {
+      ...list,
+      stats: list._count,
+    };
+  }
 
   async create({ password, ...input }: CreateUserDto): Promise<User> {
     const maxAttempts = 3;
@@ -75,37 +105,41 @@ export class UserService {
   async findOneById(
     id: string,
     useCache: boolean = true,
-    include: UserInclude[] = []
+    query?: UserGetOneDto
   ): Promise<User | null> {
     if (useCache) {
       const cached = await this.cache.get(id);
 
       if (cached) {
-        return cached;
+        return this.mapStats(cached);
       }
     }
 
     const user = await this.prisma.user.findUnique({
       where: { id },
       include:
-        include.length > 0
-          ? Object.fromEntries(include.map((item) => [item, true]))
-          : undefined,
+        query?.include &&
+        this.mapInclude(
+          query.include,
+          query.articlesLimit,
+          query.commentsLimit,
+          query.listsLimit
+        ),
     });
 
     if (user) {
       await this.cache.set(id, user);
     }
 
-    return user;
+    return user ? this.mapStats(user) : null;
   }
 
   async getOneById(
     id: string,
     useCache: boolean = true,
-    include: UserInclude[] = []
+    query?: UserGetOneDto
   ): Promise<User> {
-    const user = await this.findOneById(id, useCache, include);
+    const user = await this.findOneById(id, useCache, query);
 
     if (!user) {
       throw new NotFoundException('User not found!');

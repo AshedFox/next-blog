@@ -16,3 +16,16 @@ export function createSearchParams(
 
   return searchParams;
 }
+
+export function createApiSearchParams(
+  query: Record<string, string | number | boolean | Date | string[] | undefined>
+) {
+  const searchParams = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (!value) {
+      continue;
+    }
+    searchParams.set(key, String(value));
+  }
+  return searchParams;
+}

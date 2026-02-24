@@ -50,17 +50,14 @@ export const CommentsList = ({
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: hasNextPage ? comments.length + 1 : comments.length,
-    estimateSize: () => 106,
+    estimateSize: () => 110,
     overscan: 5,
     getScrollElement: () => parentRef.current,
     getItemKey,
   });
 
   return (
-    <div
-      ref={parentRef}
-      className={'overflow-y-auto [scrollbar-gutter:stable] max-h-240 p-1'}
-    >
+    <div ref={parentRef} className="overflow-y-auto max-h-240">
       {comments.length > 0 ? (
         <div
           className="w-full relative"

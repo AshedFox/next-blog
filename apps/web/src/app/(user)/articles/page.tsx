@@ -2,13 +2,17 @@ import { articleSearchSchema } from '@workspace/contracts';
 import { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
-import { ArticlesCatalog } from '@/features/article/components/ArticlesCatalog';
+import { ArticlesCatalog } from '@/features/article/client';
 import { createArticleSearchParams } from '@/features/article/utils';
 import Spinner from '@/shared/components/Spinner';
 
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
+
 export async function generateMetadata({
   searchParams,
-}: PageProps<'/articles'>): Promise<Metadata> {
+}: Props): Promise<Metadata> {
   const params = await searchParams;
   try {
     const search = await articleSearchSchema.parseAsync(params);
@@ -30,7 +34,7 @@ export async function generateMetadata({
   }
 }
 
-const Page = ({ searchParams }: PageProps<'/articles'>) => {
+const Page = ({ searchParams }: Props) => {
   return (
     <Suspense
       fallback={

@@ -24,6 +24,7 @@
     "@tiptap/starter-kit": "^3.13.0",
     "@workspace/contracts": "workspace:*",
     "@workspace/ui": "workspace:*",
+    "class-variance-authority": "^0.7.1",
     "date-fns": "^4.1.0",
     "highlight.js": "^11.11.1",
     "jwt-decode": "^4.0.0",

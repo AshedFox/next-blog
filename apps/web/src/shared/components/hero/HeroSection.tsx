@@ -36,7 +36,13 @@ export const HeroSection = () => {
               <CompassIcon /> Discover
             </Link>
           </Button>
-          <Suspense>
+          <Suspense
+            fallback={
+              <Button size="xl" disabled>
+                Loading...
+              </Button>
+            }
+          >
             <LoginOrWriteButton />
           </Suspense>
         </div>

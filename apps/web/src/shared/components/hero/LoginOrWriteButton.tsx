@@ -3,7 +3,7 @@ import { ArrowRight, UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
-import { getMe } from '@/features/user/server';
+import { getMe } from '@/modules/user/server';
 
 const LoginOrWriteButton = async () => {
   const user = await getMe();

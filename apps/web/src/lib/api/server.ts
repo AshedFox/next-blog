@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cookies } from 'next/headers';
 
-import { getAccessToken } from '@/features/auth/server';
+import { getAccessToken } from '@/modules/auth/server';
 
 import { getServerEnv } from '../env/server';
 import { ApiFetchResult } from './types';

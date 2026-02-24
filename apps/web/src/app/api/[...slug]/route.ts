@@ -1,6 +1,7 @@
 import { AuthResponseDto } from '@workspace/contracts';
 import { NextRequest, NextResponse } from 'next/server';
 
+import { getServerEnv } from '@/lib/env/server';
 import {
   checkAccessToken,
   getAccessToken,
@@ -8,8 +9,7 @@ import {
   refresh,
   setAccessToken,
   setRefreshToken,
-} from '@/features/auth/server';
-import { getServerEnv } from '@/lib/env/server';
+} from '@/modules/auth/server';
 
 type Context = {
   params: Promise<{ slug: string[] }>;

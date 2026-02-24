@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
-import { EditArticle } from '@/features/article/client';
-import { getArticle } from '@/features/article/server';
+import { EditArticle } from '@/modules/article/client';
+import { getArticle } from '@/modules/article/server';
 import Spinner from '@/shared/components/Spinner';
 
 type Props = {

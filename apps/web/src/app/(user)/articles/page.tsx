@@ -2,8 +2,8 @@ import { articleSearchSchema } from '@workspace/contracts';
 import { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
-import { ArticlesCatalog } from '@/features/article/client';
-import { createArticleSearchParams } from '@/features/article/utils';
+import { ArticlesCatalog } from '@/modules/article/client';
+import { createArticleSearchParams } from '@/modules/article/utils';
 import Spinner from '@/shared/components/Spinner';
 
 type Props = {

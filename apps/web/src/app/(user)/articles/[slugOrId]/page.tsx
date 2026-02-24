@@ -2,8 +2,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React, { Suspense } from 'react';
 
-import { Article, ArticleSkeleton } from '@/features/article/client';
-import { getArticle } from '@/features/article/server';
+import { Article, ArticleSkeleton } from '@/modules/article/client';
+import { getArticle } from '@/modules/article/server';
 
 type Props = {
   params: Promise<{

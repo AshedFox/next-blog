@@ -22,7 +22,6 @@ export const useEditComment = (
   initialData: CommentDto,
   onSuccess?: () => void
 ) => {
-  console.log(initialData);
   const queryClient = useQueryClient();
   const form = useForm({
     resolver: zodResolver(updateCommentSchema),

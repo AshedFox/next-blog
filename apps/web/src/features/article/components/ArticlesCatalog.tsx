@@ -30,7 +30,9 @@ export const ArticlesCatalog = async ({ searchParamsPromise }: Props) => {
 
   return (
     <div className="@container grow flex flex-col gap-6 max-w-6xl mx-auto w-full px-4 py-10">
-      <div className="flex items-center gap-4 max-w-4xl mx-auto w-full">
+      <h1 className="text-3xl font-extrabold">Explore articles</h1>
+
+      <div className="flex items-center gap-4 w-full">
         <Search />
         <ArticleSort />
       </div>

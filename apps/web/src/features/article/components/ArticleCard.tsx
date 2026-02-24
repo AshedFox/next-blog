@@ -52,7 +52,7 @@ const ArticleCard = ({ article }: Props) => {
           </Link>
         </CardTitle>
       </CardHeader>
-      <CardContent className="grow py-0 px-4text-sm text-muted-foreground">
+      <CardContent className="grow py-0 px-4 text-sm text-muted-foreground">
         {snippet ? (
           <p className="line-clamp-3">{snippet}</p>
         ) : (
@@ -61,7 +61,7 @@ const ArticleCard = ({ article }: Props) => {
           </p>
         )}
       </CardContent>
-      <CardFooter className="grid text-xs text-muted-foreground p-4! gap-2 border-t">
+      <CardFooter className="grid text-xs text-muted-foreground px-4 py-4 gap-2 border-t">
         {article.author && (
           <Link
             href={`/users/${article.author.username}`}

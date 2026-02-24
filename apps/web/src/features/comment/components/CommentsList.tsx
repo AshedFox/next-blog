@@ -50,7 +50,7 @@ export const CommentsList = ({
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({
     count: hasNextPage ? comments.length + 1 : comments.length,
-    estimateSize: () => 106,
+    estimateSize: () => 110,
     overscan: 5,
     getScrollElement: () => parentRef.current,
     getItemKey,

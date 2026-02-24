@@ -1,6 +1,11 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
+import {
+  ArticleLists,
+  ArticleListsSkeleton,
+} from '@/features/article-list/client';
+
 import { getArticle } from '../../server';
 import ArticleBody from './ArticleBody';
 import ArticleComments from './ArticleComments';
@@ -27,8 +32,11 @@ export const Article = async ({ slugOrIdPromise }: Props) => {
         <div className="col-span-3 @3xl:col-span-2 flex flex-col gap-4">
           <ArticleBody article={article.data} />
         </div>
-        <div className="col-span-3 @3xl:col-span-1 h-fit sticky top-4 space-y-2">
+        <div className="col-span-3 @3xl:col-span-1 h-fit @3xl:sticky top-4 space-y-2">
           <ArticleSidebar author={article.data.author} />
+          <Suspense fallback={<ArticleListsSkeleton />}>
+            <ArticleLists articleId={article.data.id} />
+          </Suspense>
         </div>
         <section className="col-span-3 @3xl:col-span-2">
           <Suspense fallback={<ArticleCommentsSkeleton />}>

@@ -108,7 +108,7 @@ export class UserService {
     query?: UserGetOneDto
   ): Promise<User | null> {
     if (useCache) {
-      const cached = await this.cache.get(id);
+      const cached = await this.cache.get(id, query);
 
       if (cached) {
         return this.mapStats(cached);
@@ -128,7 +128,7 @@ export class UserService {
     });
 
     if (user) {
-      await this.cache.set(id, user);
+      await this.cache.set(id, user, query);
     }
 
     return user ? this.mapStats(user) : null;

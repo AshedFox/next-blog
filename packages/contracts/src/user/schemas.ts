@@ -78,3 +78,10 @@ export function createUserWithRelationsSchema<T extends readonly UserInclude[]>(
     }
   >;
 }
+
+export const userGetOneSchema = z.object({
+  include: userIncludeSchema.optional(),
+  articlesLimit: z.coerce.number().min(1).max(100).default(10).catch(10),
+  commentsLimit: z.coerce.number().min(1).max(100).default(10).catch(10),
+  listsLimit: z.coerce.number().min(1).max(100).default(20).catch(20),
+});

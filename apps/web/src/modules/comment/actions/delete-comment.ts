@@ -13,6 +13,7 @@ export async function deleteCommentAction(id: string) {
 
   updateTag(`comments-${data.id}`);
   revalidateTag(`articles-${data.articleId}-comments`, 'max');
+  revalidateTag(`users-${data.authorId}-comments`, 'max');
 
   return { data };
 }

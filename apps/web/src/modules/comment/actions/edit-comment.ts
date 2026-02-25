@@ -14,6 +14,7 @@ export async function editCommentAction(id: string, input: UpdateCommentDto) {
 
   updateTag(`comments-${data.id}`);
   revalidateTag(`articles-${data.articleId}-comments`, 'max');
+  revalidateTag(`users-${data.authorId}-comments`, 'max');
 
   return { data };
 }

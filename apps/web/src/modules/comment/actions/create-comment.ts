@@ -13,6 +13,7 @@ export async function createCommentAction(input: CreateCommentDto) {
   }
 
   revalidateTag(`articles-${data.articleId}-comments`, 'max');
+  revalidateTag(`users-${data.authorId}-comments`, 'max');
 
   return { data };
 }

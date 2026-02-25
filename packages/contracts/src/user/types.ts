@@ -6,6 +6,7 @@ import {
   createUserSchema,
   createUserWithRelationsSchema,
   updateUserSchema,
+  userGetOneSchema,
   userSchema,
 } from './schemas';
 
@@ -22,3 +23,5 @@ export type UserInDto = z.input<typeof userSchema>;
 export type UserWithRelationsDto<T extends readonly UserInclude[]> = z.infer<
   ReturnType<typeof createUserWithRelationsSchema<T>>
 >;
+
+export type UserGetOneDto = z.infer<typeof userGetOneSchema>;

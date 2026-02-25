@@ -6,3 +6,4 @@ export * from './actions/update-list';
 export * from './api/client';
 export * from './components/CreateListDialog';
 export * from './components/CreateListForm';
+export * from './components/ListCard';

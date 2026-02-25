@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React, { Suspense } from 'react';
 
-import { Article, ArticleSkeleton } from '@/modules/article/client';
+import { Article, ArticleSkeleton } from '@/modules/article/server';
 import { getArticle } from '@/modules/article/server';
 
 type Props = {

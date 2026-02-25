@@ -5,7 +5,7 @@ import { Paginator } from '@/shared/components/Paginator';
 import Search from '@/shared/components/Search';
 
 import { searchArticles } from '../server';
-import ArticleCard from './ArticleCard';
+import { ArticleCard } from './ArticleCard';
 import ArticleSort from './ArticleSort';
 
 type Props = {

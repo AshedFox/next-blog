@@ -1,10 +1,8 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 
-import {
-  ArticleLists,
-  ArticleListsSkeleton,
-} from '@/modules/article-list/client';
+import { ArticleListsSkeleton } from '@/modules/article-list/client';
+import { ArticleLists } from '@/modules/article-list/server';
 
 import { getArticle } from '../../server';
 import ArticleBody from './ArticleBody';

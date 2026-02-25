@@ -14,7 +14,6 @@ import {
   ArticleInDto,
   CreateArticleBlockDto,
   CreateImageBlockDto,
-  VideoProvider,
 } from '@workspace/contracts';
 import { randomBytes } from 'crypto';
 import z from 'zod';
@@ -25,6 +24,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
 
 import { CreateArticleInput } from './article.types';
+import { enrichArticleBlocks } from './article.utils';
 import { ArticleSearchDto } from './dto/article-search.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { dbArticleSchema } from './schemas/db-article.schema';
@@ -70,21 +70,10 @@ export class ArticleService {
   enrich(article: Article): ArticleInDto {
     return {
       ...article,
-      blocks: (article.blocks as Prisma.JsonArray).map((value) => {
-        const block = value as ArticleBlockDto;
-
-        if (block.type === ArticleBlockType.IMAGE) {
-          block.url = this.storageService.getPublicUrl(block.fileId);
-        } else if (block.type === ArticleBlockType.VIDEO) {
-          if (block.provider === VideoProvider.YOUTUBE) {
-            block.embedUrl = `https://www.youtube.com/embed/${block.videoId}`;
-          } else if (block.provider === VideoProvider.VIMEO) {
-            block.embedUrl = `https://player.vimeo.com/video/${block.videoId}`;
-          }
-        }
-
-        return block;
-      }),
+      blocks: enrichArticleBlocks(
+        article.blocks as Prisma.JsonArray,
+        (fileId) => this.storageService.getPublicUrl(fileId)
+      ),
     };
   }
 

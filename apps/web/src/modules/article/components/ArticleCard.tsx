@@ -24,7 +24,7 @@ type Props = {
   article: ArticleDto;
 };
 
-const ArticleCard = ({ article }: Props) => {
+export const ArticleCard = ({ article }: Props) => {
   const image = getArticleFirstImage(article);
   const snippet = getArticleSnippet(article);
   const readingTime = getReadingTime(article);
@@ -95,5 +95,3 @@ const ArticleCard = ({ article }: Props) => {
     </Card>
   );
 };
-
-export default ArticleCard;

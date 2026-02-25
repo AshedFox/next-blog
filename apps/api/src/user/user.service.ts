@@ -162,15 +162,37 @@ export class UserService {
     return user;
   }
 
-  async findOneByUsername(username: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { username } });
+  async findOneByUsername(
+    username: string,
+    query?: UserGetOneDto
+  ): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { username },
+      include:
+        query?.include &&
+        this.mapInclude(
+          query.include,
+          query.articlesLimit,
+          query.commentsLimit,
+          query.listsLimit
+        ),
+    });
+
+    if (user) {
+      await this.cache.set(user.id, user, query);
+    }
+
+    return user ? this.mapStats(user) : null;
   }
 
-  async getOneByUsername(username: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({ where: { username } });
+  async getOneByUsername(
+    username: string,
+    query?: UserGetOneDto
+  ): Promise<User> {
+    const user = await this.findOneByUsername(username, query);
 
     if (!user) {
-      throw new NotFoundException('User with this email not found!');
+      throw new NotFoundException('User with this username not found!');
     }
 
     return user;

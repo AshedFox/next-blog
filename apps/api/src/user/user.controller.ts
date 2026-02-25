@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { ZodResponse } from 'nestjs-zod';
+import z from 'zod/v4/classic/external.cjs';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { MinRole } from '@/auth/decorators/min-role.decorator';
@@ -51,13 +52,19 @@ export class UserController {
     return this.userService.softDelete(userId);
   }
 
-  @Get(':id')
+  @Get(':idOrUsername')
   @ZodResponse({ type: UserDto })
-  getOne(
-    @Param('id', ParseUUIDPipe) id: string,
+  async getOne(
+    @Param('idOrUsername') idOrUsername: string,
     @Query() query: UserGetOneDto
   ) {
-    return this.userService.getOneById(id, undefined, query);
+    const isId = (await z.uuid().safeParseAsync(idOrUsername)).success;
+
+    if (isId) {
+      return this.userService.getOneById(idOrUsername, undefined, query);
+    } else {
+      return this.userService.getOneByUsername(idOrUsername, query);
+    }
   }
 
   @MinRole(UserRole.ADMIN)

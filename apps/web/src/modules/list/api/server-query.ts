@@ -11,7 +11,7 @@ import {
   fetchList,
   fetchListItems,
   fetchListsInclusionState,
-  fetchMyLists,
+  fetchUserLists,
 } from './server-transport';
 
 export async function getList(id: string, query: Partial<ListGetOneDto>) {
@@ -25,10 +25,10 @@ export async function searchUserLists(
   userId: string,
   query: Partial<ListSearchDto>
 ) {
-  'use cache: private';
+  'use cache';
   cacheTag(`users-${userId}-lists`);
 
-  return fetchMyLists(query);
+  return fetchUserLists(userId, query);
 }
 
 export async function getListsInclusionState(

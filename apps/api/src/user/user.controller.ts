@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { UserRole } from '@prisma/client';
 import { ZodResponse } from 'nestjs-zod';
-import z from 'zod/v4/classic/external.cjs';
+import { z } from 'zod';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { MinRole } from '@/auth/decorators/min-role.decorator';

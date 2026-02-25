@@ -45,3 +45,15 @@ export async function fetchArticleCommentsList(
     `/api/articles/${id}/comments?${searchParams.toString()}`
   );
 }
+
+export async function fetchUserCommentsList(
+  userId: string,
+  query: Partial<CommentSearch>
+) {
+  const search = await commentSearchSchema.parseAsync(query);
+  const searchParams = createCommentSearchParams(search);
+
+  return serverApi.get<CommentSearchResponseDto>(
+    `/api/users/${userId}/comments?${searchParams.toString()}`
+  );
+}

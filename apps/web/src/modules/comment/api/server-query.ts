@@ -1,7 +1,10 @@
 import { CommentSearch } from '@workspace/contracts';
 import { cacheTag } from 'next/cache';
 
-import { fetchArticleCommentsList } from './server-transport';
+import {
+  fetchArticleCommentsList,
+  fetchUserCommentsList,
+} from './server-transport';
 
 export async function searchArticleComments(
   id: string,
@@ -11,4 +14,14 @@ export async function searchArticleComments(
   cacheTag(`articles-${id}-comments`);
 
   return fetchArticleCommentsList(id, query);
+}
+
+export async function searchUserComments(
+  userId: string,
+  query: Partial<CommentSearch>
+) {
+  'use cache';
+  cacheTag(`users-${userId}-comments`);
+
+  return fetchUserCommentsList(userId, query);
 }

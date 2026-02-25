@@ -10,12 +10,25 @@ import { fetchMe, fetchUser } from './server-transport';
 
 export async function getMe() {
   const token = await getAccessToken(await cookies());
-  return token ? _getMeCached(token) : undefined;
+
+  if (!token) {
+    return undefined;
+  }
+
+  try {
+    return await _getMeCached(token);
+  } catch {
+    return undefined;
+  }
 }
 
 async function _getMeCached(token: string): Promise<UserDto | undefined> {
   'use cache';
-  const { data } = await fetchMe(token);
+  const { data, error } = await fetchMe(token);
+
+  if (error) {
+    throw new Error(`Failed to fetch current user: ${error.message}`);
+  }
 
   if (data) {
     cacheTag(`users-${data.id}`);

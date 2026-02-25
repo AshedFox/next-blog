@@ -15,6 +15,7 @@ import { z } from 'zod';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { MinRole } from '@/auth/decorators/min-role.decorator';
+import { Public } from '@/auth/decorators/public.decorator';
 
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
@@ -52,6 +53,7 @@ export class UserController {
     return this.userService.softDelete(userId);
   }
 
+  @Public()
   @Get(':idOrUsername')
   @ZodResponse({ type: UserDto })
   async getOne(

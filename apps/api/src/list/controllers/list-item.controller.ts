@@ -7,20 +7,25 @@ import { ListItemDto } from '../dto/list-item.dto';
 import { ListItemGetOneDto } from '../dto/list-item-get-one.dto';
 import { ListItemSearchDto } from '../dto/list-item-search.dto';
 import { ListItemSearchResponseDto } from '../dto/list-item-search-response.dto';
+import { ListItemMapper } from '../list-item.mapper';
 import { ListItemService } from '../services/list-item.service';
 
 @Controller('lists/:listId/items')
 export class ListItemController {
-  constructor(private readonly listItemService: ListItemService) {}
+  constructor(
+    private readonly listItemService: ListItemService,
+    private readonly listItemMapper: ListItemMapper
+  ) {}
 
   @Post(':articleId')
   @ZodResponse({ type: ListItemDto, status: 201 })
-  create(
+  async create(
     @CurrentUser('id') userId: string,
     @Param('listId') listId: string,
     @Param('articleId') articleId: string
   ) {
-    return this.listItemService.addToList(userId, listId, articleId);
+    const res = await this.listItemService.addToList(userId, listId, articleId);
+    return this.listItemMapper.map(res);
   }
 
   @Get()
@@ -41,7 +46,7 @@ export class ListItemController {
       const hasNextPage = data.length > limit;
 
       return {
-        data: data.slice(0, limit),
+        data: this.listItemMapper.mapMany(data),
         meta: {
           limit,
           cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
@@ -58,7 +63,7 @@ export class ListItemController {
     const totalPages = Math.ceil(count / limit);
 
     return {
-      data,
+      data: this.listItemMapper.mapMany(data),
       meta: {
         limit,
         totalCount: count,
@@ -72,22 +77,29 @@ export class ListItemController {
 
   @Get(':articleId')
   @ZodResponse({ type: ListItemDto, status: 200 })
-  getOne(
+  async getOne(
     @CurrentUser('id') userId: string,
     @Param('listId') listId: string,
     @Param('articleId') articleId: string,
     @Query() query: ListItemGetOneDto
   ) {
-    return this.listItemService.getOne(userId, listId, articleId, query);
+    const res = await this.listItemService.getOne(
+      userId,
+      listId,
+      articleId,
+      query
+    );
+    return this.listItemMapper.map(res);
   }
 
   @Delete(':articleId')
   @ZodResponse({ type: ListItemDto, status: 200 })
-  delete(
+  async delete(
     @CurrentUser('id') userId: string,
     @Param('listId') listId: string,
     @Param('articleId') articleId: string
   ) {
-    return this.listItemService.delete(userId, listId, articleId);
+    const res = await this.listItemService.delete(userId, listId, articleId);
+    return this.listItemMapper.map(res);
   }
 }

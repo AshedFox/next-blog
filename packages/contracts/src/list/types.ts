@@ -21,6 +21,8 @@ export type BaseListDto = z.infer<typeof baseListSchema>;
 
 export type ListDto = z.infer<typeof listSchema>;
 
+export type ListInDto = z.input<typeof listSchema>;
+
 export type ListWithRelationsDto<T extends readonly ListInclude[]> = z.infer<
   ReturnType<typeof createListWithRelationsSchema<T>>
 >;

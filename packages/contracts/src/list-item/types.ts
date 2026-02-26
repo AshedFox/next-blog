@@ -14,6 +14,8 @@ export type BaseListItemDto = z.infer<typeof baseListItemSchema>;
 
 export type ListItemDto = z.infer<typeof listItemSchema>;
 
+export type ListItemInDto = z.input<typeof listItemSchema>;
+
 export type ListItemWithRelationsDto<T extends readonly ListItemInclude[]> =
   z.infer<ReturnType<typeof createListItemWithRelationsSchema<T>>>;
 

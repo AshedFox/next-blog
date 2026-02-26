@@ -11,7 +11,6 @@ import {
   ArticleBlockType,
   ArticleFilters,
   type ArticleInclude,
-  ArticleInDto,
   CreateArticleBlockDto,
   CreateImageBlockDto,
 } from '@workspace/contracts';
@@ -24,7 +23,6 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { StorageService } from '@/storage/storage.service';
 
 import { CreateArticleInput } from './article.types';
-import { enrichArticleBlocks } from './article.utils';
 import { ArticleSearchDto } from './dto/article-search.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
 import { dbArticleSchema } from './schemas/db-article.schema';
@@ -65,16 +63,6 @@ export class ArticleService {
         missing.map((m) => `blocks.${m.blockIndex}.fileId file does not exist`)
       );
     }
-  }
-
-  enrich(article: Article): ArticleInDto {
-    return {
-      ...article,
-      blocks: enrichArticleBlocks(
-        article.blocks as Prisma.JsonArray,
-        (fileId) => this.storageService.getPublicUrl(fileId)
-      ),
-    };
   }
 
   async create(input: CreateArticleInput): Promise<Article> {

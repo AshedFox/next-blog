@@ -4,11 +4,15 @@ import { ZodResponse } from 'nestjs-zod';
 import { FileDto } from './dto/file.dto';
 import { InitUploadDto } from './dto/init-upload.dto';
 import { InitUploadResponseDto } from './dto/init-upload-response.dto';
+import { FileMapper } from './file.mapper';
 import { FileService } from './file.service';
 
 @Controller('files')
 export class FileController {
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    private readonly fileService: FileService,
+    private readonly fileMapper: FileMapper
+  ) {}
 
   @Post('init')
   @ZodResponse({ type: InitUploadResponseDto, status: 200 })
@@ -19,6 +23,6 @@ export class FileController {
   @Post(':id/complete')
   @ZodResponse({ type: FileDto, status: 200 })
   async completeUpload(@Param('id') id: string) {
-    return this.fileService.enrich(await this.fileService.completeUpload(id));
+    return this.fileMapper.map(await this.fileService.completeUpload(id));
   }
 }

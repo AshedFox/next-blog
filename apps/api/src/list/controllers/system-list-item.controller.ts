@@ -7,6 +7,7 @@ import z from 'zod';
 import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 
 import { ListItemDto } from '../dto/list-item.dto';
+import { ListItemMapper } from '../list-item.mapper';
 import { ListItemService } from '../services/list-item.service';
 
 const paramsSchema = z.object({
@@ -18,23 +19,36 @@ class ParamsDto extends createZodDto(paramsSchema) {}
 
 @Controller('lists/system/:type/items/:articleId')
 export class SystemListItemController {
-  constructor(private readonly listItemService: ListItemService) {}
+  constructor(
+    private readonly listItemService: ListItemService,
+    private readonly listItemMapper: ListItemMapper
+  ) {}
 
   @Post()
   @ZodResponse({ type: ListItemDto, status: 201 })
-  create(
+  async create(
     @CurrentUser('id') userId: string,
     @Param() { type, articleId }: ParamsDto
   ) {
-    return this.listItemService.addToSystemList(userId, articleId, type);
+    const list = await this.listItemService.addToSystemList(
+      userId,
+      articleId,
+      type
+    );
+    return this.listItemMapper.map(list);
   }
 
   @Delete()
   @ZodResponse({ type: ListItemDto, status: 200 })
-  delete(
+  async delete(
     @CurrentUser('id') userId: string,
     @Param() { type, articleId }: ParamsDto
   ) {
-    return this.listItemService.deleteFromSystemList(userId, articleId, type);
+    const list = await this.listItemService.deleteFromSystemList(
+      userId,
+      articleId,
+      type
+    );
+    return this.listItemMapper.map(list);
   }
 }

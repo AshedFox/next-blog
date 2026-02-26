@@ -7,11 +7,15 @@ import { OptionalAuth } from '@/auth/decorators/optional-auth.decorator';
 import { ListInclusionState } from '../dto/list-inclusion-state.dto';
 import { ListSearchDto } from '../dto/list-search.dto';
 import { ListSearchResponseDto } from '../dto/list-search-response.dto';
+import { ListMapper } from '../list.mapper';
 import { ListService } from '../services/list.service';
 
 @Controller('users')
 export class UserListController {
-  constructor(private readonly userListService: ListService) {}
+  constructor(
+    private readonly userListService: ListService,
+    private readonly listMapper: ListMapper
+  ) {}
 
   @Get('/me/lists')
   @ZodResponse({ type: ListSearchResponseDto, status: 200 })
@@ -30,7 +34,7 @@ export class UserListController {
       const hasNextPage = data.length > limit;
 
       return {
-        data: data.slice(0, limit),
+        data: this.listMapper.mapMany(data.slice(0, limit)),
         meta: {
           limit,
           cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
@@ -47,7 +51,7 @@ export class UserListController {
     const totalPages = Math.ceil(count / limit);
 
     return {
-      data,
+      data: this.listMapper.mapMany(data),
       meta: {
         limit,
         totalCount: count,
@@ -78,7 +82,7 @@ export class UserListController {
       const hasNextPage = data.length > limit;
 
       return {
-        data: data.slice(0, limit),
+        data: this.listMapper.mapMany(data.slice(0, limit)),
         meta: {
           limit,
           cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
@@ -95,7 +99,7 @@ export class UserListController {
     const totalPages = Math.ceil(count / limit);
 
     return {
-      data,
+      data: this.listMapper.mapMany(data),
       meta: {
         limit,
         totalCount: count,

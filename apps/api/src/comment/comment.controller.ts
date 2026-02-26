@@ -16,6 +16,7 @@ import { CurrentUser } from '@/auth/decorators/current-user.decorator';
 import { Public } from '@/auth/decorators/public.decorator';
 import { User, UserRole } from '@/prisma/generated/client';
 
+import { CommentMapper } from './comment.mapper';
 import { CommentService } from './comment.service';
 import { CommentDto } from './dto/comment.dto';
 import { CommentGetOneDto } from './dto/comment-get-one.dto';
@@ -23,22 +24,29 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Controller('/comments')
 export class CommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    private readonly commentService: CommentService,
+    private readonly commentMapper: CommentMapper
+  ) {}
 
   @Post()
   @ZodResponse({ type: CommentDto, status: 201 })
-  create(
+  async create(
     @Body() createCommentDto: CreateCommentDto,
     @CurrentUser('id') authorId: string
   ) {
-    return this.commentService.create({ ...createCommentDto, authorId });
+    return this.commentMapper.map(
+      await this.commentService.create({ ...createCommentDto, authorId })
+    );
   }
 
   @Public()
   @Get(':id')
   @ZodResponse({ type: CommentDto, status: 200 })
-  getOne(@Param('id') id: string, @Query() query: CommentGetOneDto) {
-    return this.commentService.getOne(id, undefined, query.include);
+  async getOne(@Param('id') id: string, @Query() query: CommentGetOneDto) {
+    return this.commentMapper.map(
+      await this.commentService.getOne(id, undefined, query.include)
+    );
   }
 
   @Patch(':id')
@@ -56,7 +64,9 @@ export class CommentController {
       );
     }
 
-    return this.commentService.update(id, updateCommentDto);
+    return this.commentMapper.map(
+      await this.commentService.update(id, updateCommentDto)
+    );
   }
 
   @Delete(':id')
@@ -70,7 +80,7 @@ export class CommentController {
       );
     }
 
-    return this.commentService.softDelete(id);
+    return this.commentMapper.map(await this.commentService.softDelete(id));
   }
 
   @Patch(':id/restore')
@@ -84,6 +94,6 @@ export class CommentController {
       );
     }
 
-    return this.commentService.restore(id);
+    return this.commentMapper.map(await this.commentService.restore(id));
   }
 }

@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
-import type { UserDto, UserInclude } from '@workspace/contracts';
+import type { UserInclude } from '@workspace/contracts';
 
 import { HashService } from '@/hash/hash.service';
 import { PrismaService } from '@/prisma/prisma.service';
@@ -42,15 +42,6 @@ export class UserService {
       articles: include?.includes('articles') && { take: articlesLimit },
       comments: include?.includes('comments') && { take: commentsLimit },
       lists: include?.includes('lists') && { take: listsLimit },
-    };
-  }
-
-  private mapStats(
-    list: User & { _count?: UserDto['stats'] }
-  ): User & { stats?: UserDto['stats'] } {
-    return {
-      ...list,
-      stats: list._count,
     };
   }
 
@@ -111,7 +102,7 @@ export class UserService {
       const cached = await this.cache.get(id, query);
 
       if (cached) {
-        return this.mapStats(cached);
+        return cached;
       }
     }
 
@@ -131,7 +122,7 @@ export class UserService {
       await this.cache.set(id, user, query);
     }
 
-    return user ? this.mapStats(user) : null;
+    return user;
   }
 
   async getOneById(
@@ -182,7 +173,7 @@ export class UserService {
       await this.cache.set(user.id, user, query);
     }
 
-    return user ? this.mapStats(user) : null;
+    return user;
   }
 
   async getOneByUsername(

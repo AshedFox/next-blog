@@ -3,13 +3,17 @@ import { ZodResponse } from 'nestjs-zod';
 
 import { Public } from '@/auth/decorators/public.decorator';
 
+import { CommentMapper } from './comment.mapper';
 import { CommentService } from './comment.service';
 import { CommentSearchDto } from './dto/comment-search.dto';
 import { CommentSearchResponseDto } from './dto/comment-search-response.dto';
 
 @Controller('articles')
 export class ArticleCommentController {
-  constructor(private readonly commentService: CommentService) {}
+  constructor(
+    private readonly commentService: CommentService,
+    private readonly commentMapper: CommentMapper
+  ) {}
 
   @Public()
   @Get(':id/comments')
@@ -23,7 +27,7 @@ export class ArticleCommentController {
     const hasNextPage = data.length > limit;
 
     return {
-      data: data.slice(0, limit),
+      data: this.commentMapper.mapMany(data.slice(0, limit)),
       meta: {
         limit,
         cursor: hasNextPage ? data[data.length - 1]!.id : undefined,

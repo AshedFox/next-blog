@@ -20,37 +20,48 @@ import { Public } from '@/auth/decorators/public.decorator';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { UserGetOneDto } from './dto/user-get-one.dto';
+import { UserMapper } from './user.mapper';
 import { UserService } from './user.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userMapper: UserMapper
+  ) {}
 
   @Get('me')
   @ZodResponse({ type: UserDto })
-  getMe(@CurrentUser('id') userId: string, @Query() query: UserGetOneDto) {
-    return this.userService.getOneById(userId, undefined, query);
+  async getMe(
+    @CurrentUser('id') userId: string,
+    @Query() query: UserGetOneDto
+  ) {
+    return this.userMapper.map(
+      await this.userService.getOneById(userId, undefined, query)
+    );
   }
 
   @Patch('me')
   @ZodResponse({ type: UserDto })
-  patchMe(
+  async patchMe(
     @CurrentUser('id') userId: string,
     @Body() updateUserDto: UpdateUserDto
   ) {
-    return this.userService.update(userId, updateUserDto);
+    return this.userMapper.map(
+      await this.userService.update(userId, updateUserDto)
+    );
   }
 
   @Post('me/recover')
   @ZodResponse({ type: UserDto, status: 200 })
-  recoverMe(@CurrentUser('id') userId: string) {
-    return this.userService.restore(userId);
+  async recoverMe(@CurrentUser('id') userId: string) {
+    return this.userMapper.map(await this.userService.restore(userId));
   }
 
   @Delete('me')
   @ZodResponse({ type: UserDto })
-  deleteMe(@CurrentUser('id') userId: string) {
-    return this.userService.softDelete(userId);
+  async deleteMe(@CurrentUser('id') userId: string) {
+    return this.userMapper.map(await this.userService.softDelete(userId));
   }
 
   @Public()
@@ -63,33 +74,39 @@ export class UserController {
     const isId = (await z.uuid().safeParseAsync(idOrUsername)).success;
 
     if (isId) {
-      return this.userService.getOneById(idOrUsername, undefined, query);
+      return this.userMapper.map(
+        await this.userService.getOneById(idOrUsername, undefined, query)
+      );
     } else {
-      return this.userService.getOneByUsername(idOrUsername, query);
+      return this.userMapper.map(
+        await this.userService.getOneByUsername(idOrUsername, query)
+      );
     }
   }
 
   @MinRole(UserRole.ADMIN)
   @Patch(':id')
   @ZodResponse({ type: UserDto })
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto
   ) {
-    return this.userService.update(id, updateUserDto);
+    return this.userMapper.map(
+      await this.userService.update(id, updateUserDto)
+    );
   }
 
   @MinRole(UserRole.ADMIN)
   @Post(':id/restore')
   @ZodResponse({ type: UserDto, status: 200 })
-  restore(@Param('id', ParseUUIDPipe) id: string) {
-    return this.userService.restore(id);
+  async restore(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userMapper.map(await this.userService.restore(id));
   }
 
   @MinRole(UserRole.ADMIN)
   @Delete(':id')
   @ZodResponse({ type: UserDto })
-  delete(@Param('id', ParseUUIDPipe) id: string) {
-    return this.userService.softDelete(id);
+  async delete(@Param('id', ParseUUIDPipe) id: string) {
+    return this.userMapper.map(await this.userService.softDelete(id));
   }
 }

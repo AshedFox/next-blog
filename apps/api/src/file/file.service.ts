@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { File, FileStatus } from '@prisma/client';
-import { FileInDto } from '@workspace/contracts';
 import { randomUUID } from 'crypto';
 
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
@@ -23,13 +22,6 @@ export class FileService {
     private readonly storageService: StorageService,
     private readonly prisma: PrismaService
   ) {}
-
-  enrich(file: File): FileInDto {
-    return {
-      ...file,
-      url: this.storageService.getPublicUrl(file.id),
-    };
-  }
 
   async findOne(
     id: string,

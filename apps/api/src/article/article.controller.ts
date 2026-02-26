@@ -18,6 +18,7 @@ import { MinRole } from '@/auth/decorators/min-role.decorator';
 import { Public } from '@/auth/decorators/public.decorator';
 import { DeletedMode } from '@/common/soft-delete/deleted-filter';
 
+import { ArticleMapper } from './article.mapper';
 import { ArticleService } from './article.service';
 import { ArticleDto } from './dto/article.dto';
 import { ArticleGetOneDto } from './dto/article-get-one.dto';
@@ -28,7 +29,10 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 
 @Controller('articles')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(
+    private readonly articleService: ArticleService,
+    private readonly articleMapper: ArticleMapper
+  ) {}
 
   @Post()
   @ZodResponse({ type: ArticleDto, status: 200 })
@@ -36,7 +40,7 @@ export class ArticleController {
     @Body() createArticleDto: CreateArticleDto,
     @CurrentUser('id') userId: string
   ) {
-    return this.articleService.enrich(
+    return this.articleMapper.map(
       await this.articleService.create({
         ...createArticleDto,
         authorId: userId,
@@ -53,7 +57,7 @@ export class ArticleController {
   ) {
     const isId = (await z.uuid().safeParseAsync(idOrSlug)).success;
 
-    return this.articleService.enrich(
+    return this.articleMapper.map(
       isId
         ? await this.articleService.getOne(idOrSlug, undefined, query.include)
         : await this.articleService.getOneBySlug(
@@ -77,7 +81,7 @@ export class ArticleController {
       return {
         data: data
           .slice(0, limit)
-          .map((article) => this.articleService.enrich(article)),
+          .map((article) => this.articleMapper.map(article)),
         meta: {
           limit,
           cursor: hasNextPage ? data[data.length - 1]!.id : undefined,
@@ -90,7 +94,7 @@ export class ArticleController {
     const totalPages = Math.ceil(count / limit);
 
     return {
-      data: data.map((article) => this.articleService.enrich(article)),
+      data: data.map((article) => this.articleMapper.map(article)),
       meta: {
         limit,
         totalCount: count,
@@ -108,7 +112,7 @@ export class ArticleController {
     @Param('id') id: string,
     @Body() updateArticleDto: UpdateArticleDto
   ) {
-    return this.articleService.enrich(
+    return this.articleMapper.map(
       await this.articleService.update(id, updateArticleDto)
     );
   }
@@ -124,7 +128,7 @@ export class ArticleController {
       );
     }
 
-    return this.articleService.enrich(await this.articleService.restore(id));
+    return this.articleMapper.map(await this.articleService.restore(id));
   }
 
   @Post(':id/request-publish')
@@ -138,7 +142,7 @@ export class ArticleController {
       );
     }
 
-    return this.articleService.enrich(
+    return this.articleMapper.map(
       await this.articleService.changeStatus(id, ArticleStatus.IN_REVIEW)
     );
   }
@@ -147,7 +151,7 @@ export class ArticleController {
   @Post(':id/approve')
   @ZodResponse({ type: ArticleDto, status: 200 })
   async approve(@Param('id') id: string) {
-    return this.articleService.enrich(
+    return this.articleMapper.map(
       await this.articleService.changeStatus(id, ArticleStatus.PUBLISHED)
     );
   }
@@ -156,7 +160,7 @@ export class ArticleController {
   @Post(':id/reject')
   @ZodResponse({ type: ArticleDto, status: 200 })
   async reject(@Param('id') id: string) {
-    return this.articleService.enrich(
+    return this.articleMapper.map(
       await this.articleService.changeStatus(id, ArticleStatus.REJECTED)
     );
   }
@@ -172,6 +176,6 @@ export class ArticleController {
       );
     }
 
-    return this.articleService.enrich(await this.articleService.softDelete(id));
+    return this.articleMapper.map(await this.articleService.softDelete(id));
   }
 }

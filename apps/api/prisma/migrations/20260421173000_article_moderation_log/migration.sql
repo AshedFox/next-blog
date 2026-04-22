@@ -2,7 +2,7 @@
 CREATE TABLE "ArticleModerationLog" (
     "id" TEXT NOT NULL,
     "articleId" UUID NOT NULL,
-    "statusFrom" "ArticleStatus" NOT NULL,
+    "statusTo" "ArticleStatus" NOT NULL,
     "reason" TEXT,
     "adminId" UUID,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

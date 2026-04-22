@@ -9,7 +9,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { ArticleStatus, User, UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import { ZodResponse } from 'nestjs-zod';
 import z from 'zod';
 
@@ -142,26 +142,28 @@ export class ArticleController {
       );
     }
 
-    return this.articleMapper.map(
-      await this.articleService.changeStatus(id, ArticleStatus.IN_REVIEW)
-    );
+    return this.articleMapper.map(await this.articleService.publish(id));
   }
 
   @MinRole(UserRole.ADMIN)
   @Post(':id/approve')
   @ZodResponse({ type: ArticleDto, status: 200 })
-  async approve(@Param('id') id: string) {
+  async approve(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.articleMapper.map(
-      await this.articleService.changeStatus(id, ArticleStatus.PUBLISHED)
+      await this.articleService.approve(id, userId)
     );
   }
 
   @MinRole(UserRole.ADMIN)
   @Post(':id/reject')
   @ZodResponse({ type: ArticleDto, status: 200 })
-  async reject(@Param('id') id: string) {
+  async reject(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @Body('reason') reason: string
+  ) {
     return this.articleMapper.map(
-      await this.articleService.changeStatus(id, ArticleStatus.REJECTED)
+      await this.articleService.reject(id, userId, reason)
     );
   }
 

@@ -407,10 +407,51 @@ export class ArticleService {
     return this.prisma.article.restore({ where: { id } });
   }
 
-  async changeStatus(id: string, status: ArticleStatus): Promise<Article> {
-    return this.prisma.article.update({
-      where: { id },
-      data: { status },
+  async publish(id: string): Promise<Article> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.articleModerationLog.create({
+        data: {
+          statusTo: ArticleStatus.IN_REVIEW,
+          articleId: id,
+        },
+      });
+      return tx.article.update({
+        where: { id },
+        data: { status: ArticleStatus.IN_REVIEW },
+      });
+    });
+  }
+
+  async approve(id: string, adminId: string): Promise<Article> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.articleModerationLog.create({
+        data: {
+          statusTo: ArticleStatus.PUBLISHED,
+          articleId: id,
+          adminId,
+        },
+      });
+      return tx.article.update({
+        where: { id },
+        data: { status: ArticleStatus.PUBLISHED },
+      });
+    });
+  }
+
+  async reject(id: string, adminId: string, reason: string): Promise<Article> {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.articleModerationLog.create({
+        data: {
+          statusTo: ArticleStatus.REJECTED,
+          reason,
+          articleId: id,
+          adminId,
+        },
+      });
+      return tx.article.update({
+        where: { id },
+        data: { status: ArticleStatus.REJECTED },
+      });
     });
   }
 

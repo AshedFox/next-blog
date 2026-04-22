@@ -17,6 +17,8 @@ const PROTECTED_PATTERNS = [
 
 const GUEST_ONLY_PATTERNS = [/^\/login$/, /^\/sign-up$/];
 
+const ADMIN_ONLY_PATTERNS = [/^\/admin/];
+
 const isMatch = (path: string, patterns: RegExp[]) =>
   patterns.some((pattern) => pattern.test(path));
 
@@ -29,8 +31,9 @@ export async function proxy(req: NextRequest) {
 
   const isProtected = isMatch(pathname, PROTECTED_PATTERNS);
   const isGuestOnly = isMatch(pathname, GUEST_ONLY_PATTERNS);
+  const isAdminOnly = isMatch(pathname, ADMIN_ONLY_PATTERNS);
 
-  const { isValid, needsRefresh } = accessToken
+  const { isValid, needsRefresh, role } = accessToken
     ? checkAccessToken(accessToken)
     : {};
 
@@ -70,6 +73,10 @@ export async function proxy(req: NextRequest) {
       return res;
     }
     return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  if (isAdminOnly && role !== 'ADMIN') {
+    return NextResponse.redirect(new URL('/', req.url));
   }
 
   return res;

@@ -63,9 +63,10 @@ export async function clearRefreshToken(
 export function checkAccessToken(token: string): {
   isValid: boolean;
   needsRefresh: boolean;
+  role?: string;
 } {
   try {
-    const decoded = jwtDecode<{ exp: number }>(token);
+    const decoded = jwtDecode<{ exp: number; role?: string }>(token);
     const now = Date.now();
     const expiryTime = decoded.exp * 1000;
     const timeToExpiry = expiryTime - now;
@@ -75,6 +76,7 @@ export function checkAccessToken(token: string): {
       needsRefresh:
         timeToExpiry < getServerEnv().TOKEN_REFRESH_THRESHOLD &&
         timeToExpiry > 0,
+      role: decoded.role,
     };
   } catch {
     return {

@@ -4,6 +4,7 @@ import React, { Suspense } from 'react';
 
 import { Article, ArticleSkeleton } from '@/modules/article/server';
 import { getArticle } from '@/modules/article/server';
+import { UserArticleActions } from '@/modules/article-moderation/client';
 
 type Props = {
   params: Promise<{
@@ -35,7 +36,10 @@ const Page = ({ params }: Props) => {
 
   return (
     <Suspense fallback={<ArticleSkeleton />}>
-      <Article slugOrIdPromise={slugOrIdPromise} />
+      <Article
+        slugOrIdPromise={slugOrIdPromise}
+        renderActions={(article) => <UserArticleActions article={article} />}
+      />
     </Suspense>
   );
 };

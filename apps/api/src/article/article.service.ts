@@ -99,8 +99,8 @@ export class ArticleService {
 
   private getRankSql(search: string): Prisma.Sql {
     return Prisma.sql`(
-      ts_rank_cd("searchVector", websearch_to_tsquery('russian', ${search})) +
-      ts_rank_cd("searchVector", websearch_to_tsquery('english', ${search}))
+      ts_rank_cd("Article"."searchVector", websearch_to_tsquery('russian', ${search})) +
+      ts_rank_cd("Article"."searchVector", websearch_to_tsquery('english', ${search}))
     )`;
   }
 
@@ -112,27 +112,29 @@ export class ArticleService {
 
     if (search) {
       where.push(Prisma.sql`(
-        "searchVector" @@ websearch_to_tsquery('english', ${search}) OR
-        "searchVector" @@ websearch_to_tsquery('russian', ${search})
+        "Article"."searchVector" @@ websearch_to_tsquery('english', ${search}) OR
+        "Article"."searchVector" @@ websearch_to_tsquery('russian', ${search})
       )`);
     }
 
     if (filters.authorId?.length) {
-      where.push(Prisma.sql`"authorId" IN (${Prisma.join(filters.authorId)})`);
+      where.push(
+        Prisma.sql`"Article"."authorId" IN (${Prisma.join(filters.authorId)})`
+      );
     }
 
     if (filters.status?.length) {
       where.push(
-        Prisma.sql`"status"::text IN (${Prisma.join(filters.status)})`
+        Prisma.sql`"Article"."status"::text IN (${Prisma.join(filters.status)})`
       );
     }
 
     if (filters.createdAtGte) {
-      where.push(Prisma.sql`"createdAt" >= ${filters.createdAtGte}`);
+      where.push(Prisma.sql`"Article"."createdAt" >= ${filters.createdAtGte}`);
     }
 
     if (filters.createdAtLte) {
-      where.push(Prisma.sql`"createdAt" <= ${filters.createdAtLte}`);
+      where.push(Prisma.sql`"Article"."createdAt" <= ${filters.createdAtLte}`);
     }
 
     return where;
@@ -207,11 +209,14 @@ export class ArticleService {
     if (sort) {
       Object.entries(sort).forEach(([field, direction]) => {
         orderBy.push(
-          Prisma.sql`"${Prisma.raw(field)}" ${Prisma.raw(direction)}`
+          Prisma.sql`"Article"."${Prisma.raw(field)}" ${Prisma.raw(direction)}`
         );
       });
     }
-    orderBy.push(Prisma.sql`${rankCalculation} DESC`, Prisma.sql`id ASC`);
+    orderBy.push(
+      Prisma.sql`${rankCalculation} DESC`,
+      Prisma.sql`"Article"."id" ASC`
+    );
 
     const orderByClause =
       orderBy.length > 0

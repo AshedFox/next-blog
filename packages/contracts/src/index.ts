@@ -1,4 +1,5 @@
 export * from './article';
+export * from './article-moderation';
 export * from './auth';
 export * from './comment';
 export * from './common';

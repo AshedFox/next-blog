@@ -72,7 +72,7 @@ export class AuthService {
   ): Promise<AuthResponseInDto> {
     const [accessToken, [refreshToken, { expiresAt: refreshTokenExpiresAt }]] =
       await Promise.all([
-        this.generateAccessToken(user.id),
+        this.generateAccessToken(user),
         this.refreshTokenService.create({
           ...metadata,
           userId: user.id,
@@ -89,8 +89,8 @@ export class AuthService {
     };
   }
 
-  async generateAccessToken(userId: string): Promise<string> {
-    return this.jwtService.signAsync({ sub: userId });
+  async generateAccessToken(user: User): Promise<string> {
+    return this.jwtService.signAsync({ sub: user.id, role: user.role });
   }
 
   async refresh(oldRefreshToken: string): Promise<AuthResponseInDto> {
@@ -145,8 +145,8 @@ export class AuthService {
     try {
       const [refreshToken, { userId, expiresAt: refreshTokenExpiresAt }] =
         await this.refreshTokenService.rotate(oldRefreshToken);
-      const accessToken = await this.generateAccessToken(userId);
       const user = await this.userService.getOneById(userId);
+      const accessToken = await this.generateAccessToken(user);
 
       return {
         tokenType: 'Bearer',

@@ -1,5 +1,6 @@
+import { ArticleWithRelationsDto } from '@workspace/contracts';
 import { notFound } from 'next/navigation';
-import { Suspense } from 'react';
+import { ReactNode, Suspense } from 'react';
 
 import { ArticleListsSkeleton } from '@/modules/article-list/client';
 import { ArticleLists } from '@/modules/article-list/server';
@@ -13,9 +14,10 @@ import ArticleSidebar from './ArticleSidebar';
 
 type Props = {
   slugOrIdPromise: Promise<string>;
+  renderActions?: (article: ArticleWithRelationsDto<['author']>) => ReactNode;
 };
 
-export const Article = async ({ slugOrIdPromise }: Props) => {
+export const Article = async ({ slugOrIdPromise, renderActions }: Props) => {
   const slugOrId = await slugOrIdPromise;
   const article = await getArticle(slugOrId);
 
@@ -31,6 +33,7 @@ export const Article = async ({ slugOrIdPromise }: Props) => {
           <ArticleBody article={article.data} />
         </div>
         <div className="col-span-3 @3xl:col-span-1 h-fit @3xl:sticky top-4 space-y-2">
+          {renderActions?.(article.data)}
           <ArticleSidebar author={article.data.author} />
           <Suspense fallback={<ArticleListsSkeleton />}>
             <ArticleLists articleId={article.data.id} />

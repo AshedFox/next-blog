@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu';
-import { LogOutIcon, PencilIcon, UserIcon } from 'lucide-react';
+import { LogOutIcon, PencilIcon, ShieldBanIcon, UserIcon } from 'lucide-react';
 import Link from 'next/link';
 import React, { useState } from 'react';
 
@@ -47,6 +47,17 @@ export const ProfileDropdown = ({ user }: Props) => {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          {user.role === 'ADMIN' && (
+            <>
+              <DropdownMenuItem asChild>
+                <Link href="/admin/articles">
+                  <ShieldBanIcon />
+                  Moderate
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem
             variant="destructive"
             onSelect={() => setIsLogoutOpen(true)}

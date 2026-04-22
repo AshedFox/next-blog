@@ -2,6 +2,7 @@ import { articleSearchSchema } from '@workspace/contracts';
 import { Metadata } from 'next';
 import React, { Suspense } from 'react';
 
+import { ArticleCard } from '@/modules/article/client';
 import { ArticlesCatalog } from '@/modules/article/server';
 import { createArticleSearchParams } from '@/modules/article/utils';
 import Spinner from '@/shared/components/Spinner';
@@ -43,7 +44,14 @@ const Page = ({ searchParams }: Props) => {
         </div>
       }
     >
-      <ArticlesCatalog searchParamsPromise={searchParams} />
+      <ArticlesCatalog
+        searchParamsPromise={searchParams}
+        basePath="/articles"
+        title="Explore Articles"
+        renderItem={(article) => (
+          <ArticleCard key={article.id} article={article} />
+        )}
+      />
     </Suspense>
   );
 };

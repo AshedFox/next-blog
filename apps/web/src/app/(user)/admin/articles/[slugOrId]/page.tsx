@@ -1,10 +1,10 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 
 import { Article, ArticleSkeleton } from '@/modules/article/server';
 import { getArticle } from '@/modules/article/server';
-import { UserArticleActions } from '@/modules/article-moderation/client';
+import { AdminArticleActions } from '@/modules/article-moderation/client';
 
 type Props = {
   params: Promise<{
@@ -31,14 +31,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const Page = ({ params }: Props) => {
-  const slugOrIdPromise = params.then((params) => params.slugOrId);
-
+const Page = async ({ params }: Props) => {
   return (
     <Suspense fallback={<ArticleSkeleton />}>
       <Article
-        slugOrIdPromise={slugOrIdPromise}
-        renderActions={(article) => <UserArticleActions article={article} />}
+        slugOrIdPromise={params.then((params) => params.slugOrId)}
+        renderActions={(article) => <AdminArticleActions article={article} />}
       />
     </Suspense>
   );

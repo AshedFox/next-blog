@@ -18,20 +18,21 @@ enum UserStatus {
 }
 
 model User {
-  id            String         @id @default(uuid()) @db.Uuid
-  email         String         @unique
-  passwordHash  String
-  username      String         @unique @db.VarChar(63)
-  name          String         @db.VarChar(127)
-  role          UserRole       @default(USER)
-  status        UserStatus     @default(PENDING)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  deletedAt     DateTime?
-  articles      Article[]
-  comments      Comment[]
-  lists         List[]
-  refreshTokens RefreshToken[]
+  id                    String                 @id @default(uuid()) @db.Uuid
+  email                 String                 @unique
+  passwordHash          String
+  username              String                 @unique @db.VarChar(63)
+  name                  String                 @db.VarChar(127)
+  role                  UserRole               @default(USER)
+  status                UserStatus             @default(PENDING)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  deletedAt             DateTime?
+  articles              Article[]
+  comments              Comment[]
+  lists                 List[]
+  refreshTokens         RefreshToken[]
+  articleModerationLogs ArticleModerationLog[]
 }
 
 enum FileStatus {
@@ -74,23 +75,35 @@ enum ArticleStatus {
 }
 
 model Article {
-  id           String                   @id @default(uuid()) @db.Uuid
-  slug         String                   @unique @db.VarChar(127)
-  title        String                   @db.VarChar(127)
-  blocks       Json                     @db.JsonB
-  searchVector Unsupported("tsvector")? @default(dbgenerated("(((setweight(to_tsvector('english'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::\"char\") || setweight(to_tsvector('russian'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::\"char\")) || setweight(to_tsvector('english'::regconfig, extract_article_content(blocks)), 'B'::\"char\")) || setweight(to_tsvector('russian'::regconfig, extract_article_content(blocks)), 'B'::\"char\"))"))
-  status       ArticleStatus            @default(DRAFT)
-  createdAt    DateTime                 @default(now())
-  updatedAt    DateTime                 @updatedAt
-  deletedAt    DateTime?
-  authorId     String                   @db.Uuid
-  author       User                     @relation(fields: [authorId], references: [id])
-  comments     Comment[]
-  listsItems   ListItem[]
+  id                    String                   @id @default(uuid()) @db.Uuid
+  slug                  String                   @unique @db.VarChar(127)
+  title                 String                   @db.VarChar(127)
+  blocks                Json                     @db.JsonB
+  searchVector          Unsupported("tsvector")? @default(dbgenerated("(((setweight(to_tsvector('english'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::\"char\") || setweight(to_tsvector('russian'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::\"char\")) || setweight(to_tsvector('english'::regconfig, extract_article_content(blocks)), 'B'::\"char\")) || setweight(to_tsvector('russian'::regconfig, extract_article_content(blocks)), 'B'::\"char\"))"))
+  status                ArticleStatus            @default(DRAFT)
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  deletedAt             DateTime?
+  authorId              String                   @db.Uuid
+  author                User                     @relation(fields: [authorId], references: [id])
+  comments              Comment[]
+  listsItems            ListItem[]
+  articleModerationLogs ArticleModerationLog[]
 
   @@index([status, createdAt])
   @@index([authorId])
   @@index([searchVector], type: Gin)
+}
+
+model ArticleModerationLog {
+  id        String        @id @default(uuid())
+  articleId String        @db.Uuid
+  article   Article       @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  statusTo  ArticleStatus
+  reason    String?       @db.Text
+  adminId   String?       @db.Uuid
+  admin     User?         @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  createdAt DateTime      @default(now())
 }
 
 model Comment {

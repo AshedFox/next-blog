@@ -1,5 +1,6 @@
 export * from './actions/create-article';
 export * from './actions/edit-article';
+export * from './components/AdminArticleCard';
 export * from './components/ArticleCard';
 export * from './components/CreateArticleForm';
 export * from './components/EditArticleForm';

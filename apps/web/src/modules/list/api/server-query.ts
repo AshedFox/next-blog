@@ -25,7 +25,7 @@ export async function searchUserLists(
   userId: string,
   query: Partial<ListSearchDto>
 ) {
-  'use cache';
+  'use cache: private';
   cacheTag(`users-${userId}-lists`);
 
   return fetchUserLists(userId, query);

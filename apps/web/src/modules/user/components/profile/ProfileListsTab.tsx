@@ -1,15 +1,16 @@
 import React from 'react';
 
 import { ListCard } from '@/modules/list/client';
-import { fetchUserLists } from '@/modules/list/server';
+import { searchUserLists } from '@/modules/list/server';
 
 type Props = {
   userId: string;
 };
 
 export async function ProfileListsTab({ userId }: Props) {
-  const { data: lists, error } = await fetchUserLists(userId, {
+  const { data: lists, error } = await searchUserLists(userId, {
     limit: 20,
+    include: ['itemsCount'],
   });
 
   if (error || !lists?.data.length) {

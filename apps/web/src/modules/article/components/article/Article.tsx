@@ -4,6 +4,7 @@ import { ReactNode, Suspense } from 'react';
 
 import { ArticleListsSkeleton } from '@/modules/article-list/client';
 import { ArticleLists } from '@/modules/article-list/server';
+import { ArticleVotes } from '@/modules/article-vote/server';
 
 import { getArticle } from '../../server';
 import ArticleBody from './ArticleBody';
@@ -35,9 +36,14 @@ export const Article = async ({ slugOrIdPromise, renderActions }: Props) => {
         <div className="col-span-3 @3xl:col-span-1 h-fit @3xl:sticky top-4 space-y-2">
           {renderActions?.(article.data)}
           <ArticleSidebar author={article.data.author} />
-          <Suspense fallback={<ArticleListsSkeleton />}>
-            <ArticleLists articleId={article.data.id} />
-          </Suspense>
+          <div className="flex items-center justify-between gap-2">
+            <Suspense fallback={<ArticleListsSkeleton />}>
+              <ArticleLists articleId={article.data.id} />
+            </Suspense>
+            <Suspense>
+              <ArticleVotes articleId={article.data.id} />
+            </Suspense>
+          </div>
         </div>
         <section className="col-span-3 @3xl:col-span-2">
           <Suspense fallback={<ArticleCommentsSkeleton />}>

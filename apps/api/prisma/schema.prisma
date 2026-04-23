@@ -33,6 +33,7 @@ model User {
   lists                 List[]
   refreshTokens         RefreshToken[]
   articleModerationLogs ArticleModerationLog[]
+  articlesVotes         ArticleVote[]
 }
 
 enum FileStatus {
@@ -89,6 +90,7 @@ model Article {
   comments              Comment[]
   listsItems            ListItem[]
   articleModerationLogs ArticleModerationLog[]
+  votes                 ArticleVote[]
 
   @@index([status, createdAt])
   @@index([authorId])
@@ -119,6 +121,19 @@ model Comment {
   replyToId String?   @db.Uuid
   replyTo   Comment?  @relation("Replies", fields: [replyToId], references: [id], onDelete: SetNull)
   replies   Comment[] @relation("Replies")
+}
+
+model ArticleVote {
+  id        String   @id @default(uuid()) @db.Uuid
+  value     Int      @db.SmallInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id])
+  articleId String   @db.Uuid
+  article   Article  @relation(fields: [articleId], references: [id])
+
+  @@unique([userId, articleId])
 }
 
 enum SystemListType {

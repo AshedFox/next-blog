@@ -6,6 +6,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 import { ArticleModule } from './article/article.module';
 import { ArticleModerationModule } from './article-moderation/article-moderation.module';
+import { ArticleVoteModule } from './article-vote/article-vote.module';
 import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
 import { HttpExceptionFilter } from './common/http/http-exception-filter';
@@ -23,6 +24,7 @@ import { UserModule } from './user/user.module';
     AuthModule,
     ArticleModule,
     ArticleModerationModule,
+    ArticleVoteModule,
     CommentModule,
     FileModule,
     HealthModule,

@@ -10,6 +10,7 @@ type Props = {
 export async function ProfileListsTab({ userId }: Props) {
   const { data: lists, error } = await searchUserLists(userId, {
     limit: 20,
+    include: ['itemsCount'],
   });
 
   if (error || !lists?.data.length) {

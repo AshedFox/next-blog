@@ -6,6 +6,9 @@ import { Button } from '@workspace/ui/components/button';
 import React, { useCallback, useMemo, useRef } from 'react';
 import { useOnInView } from 'react-intersection-observer';
 
+import { CommentVotes } from '@/modules/comment-vote/client';
+import { useCommentsVotes } from '@/modules/comment-vote/hooks/useCommentsVotes';
+
 import { useInfiniteComments } from '../hooks';
 import { CommentCard } from './CommentCard';
 
@@ -32,6 +35,16 @@ export const CommentsList = ({
   const comments = useMemo(
     () => data?.pages.flatMap((page) => page.data) ?? [],
     [data]
+  );
+
+  const commentsPagesIds = useMemo(
+    () => data.pages.map((page) => page.data.map((v) => v.id)),
+    [data]
+  );
+
+  const { userVotes, votesTotals } = useCommentsVotes(
+    commentsPagesIds,
+    currentUserId
   );
 
   const parentRef = useRef<HTMLDivElement>(null);
@@ -96,6 +109,14 @@ export const CommentsList = ({
                   <CommentCard
                     comment={comment}
                     isOwn={comment.authorId === currentUserId}
+                    footbarSlot={
+                      <CommentVotes
+                        commentId={comment.id}
+                        userId={currentUserId}
+                        commentVotesTotal={votesTotals[comment.id] ?? 0}
+                        userVote={userVotes[comment.id]}
+                      />
+                    }
                   />
                 )}
               </div>

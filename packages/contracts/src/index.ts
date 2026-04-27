@@ -3,6 +3,7 @@ export * from './article-moderation';
 export * from './article-vote';
 export * from './auth';
 export * from './comment';
+export * from './comment-vote';
 export * from './common';
 export * from './file';
 export * from './list';

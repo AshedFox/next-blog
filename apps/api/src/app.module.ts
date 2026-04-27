@@ -9,6 +9,7 @@ import { ArticleModerationModule } from './article-moderation/article-moderation
 import { ArticleVoteModule } from './article-vote/article-vote.module';
 import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
+import { CommentVoteModule } from './comment-vote/comment-vote.module';
 import { HttpExceptionFilter } from './common/http/http-exception-filter';
 import { FileModule } from './file/file.module';
 import { HealthModule } from './health/health.module';
@@ -26,6 +27,7 @@ import { UserModule } from './user/user.module';
     ArticleModerationModule,
     ArticleVoteModule,
     CommentModule,
+    CommentVoteModule,
     FileModule,
     HealthModule,
     ListModule,

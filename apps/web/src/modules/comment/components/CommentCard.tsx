@@ -1,19 +1,25 @@
 import { CommentDto } from '@workspace/contracts';
-import { Card, CardContent, CardHeader } from '@workspace/ui/components/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from '@workspace/ui/components/card';
 import { format } from 'date-fns';
 import Link from 'next/link';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
-import { UserAvatar } from '@/modules/user/client';
+import { UserAvatar } from '@/modules/user/components/UserAvatar';
 
 import { CommentActions } from './comment-actions';
 
 type Props = {
   comment: CommentDto;
   isOwn?: boolean;
+  footbarSlot?: ReactNode;
 };
 
-export const CommentCard = ({ comment, isOwn }: Props) => {
+export const CommentCard = ({ comment, isOwn, footbarSlot }: Props) => {
   return (
     <Card className="py-2 @md:py-4 gap-2">
       <CardHeader className="text-xs flex flex-row items-center px-2 @md:px-4">
@@ -34,6 +40,7 @@ export const CommentCard = ({ comment, isOwn }: Props) => {
       <CardContent className="px-2 @md:px-4">
         <p className="whitespace-break-spaces">{comment.content}</p>
       </CardContent>
+      {footbarSlot && <CardFooter>{footbarSlot}</CardFooter>}
     </Card>
   );
 };

@@ -1,3 +1,5 @@
+import { Badge } from '@workspace/ui/components/badge';
+
 import { getMe } from '@/modules/user/server';
 
 import { getArticleVotesTotal, getOwnArticleVote } from '../server';
@@ -24,13 +26,19 @@ export const ArticleVotes = async ({ articleId }: Props) => {
 
   return (
     <div className="flex gap-3 items-center">
-      {user && <UpvoteButton articleId={articleId} userVote={userVote?.data} />}
-      <span className="text-sm font-semibold text-muted-foreground w-4 text-center">
-        {total.data.total}
-      </span>
-      {user && (
-        <DownvoteButton articleId={articleId} userVote={userVote?.data} />
-      )}
+      <UpvoteButton
+        articleId={articleId}
+        userVote={userVote?.data}
+        userId={user?.id}
+      />
+
+      <Badge variant="outline">{total.data.total}</Badge>
+
+      <DownvoteButton
+        articleId={articleId}
+        userVote={userVote?.data}
+        userId={user?.id}
+      />
     </div>
   );
 };

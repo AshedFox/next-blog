@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import React from 'react';
 
-import { getUser, ProfileTabs, UserProfileView } from '@/modules/user/server';
+import { UserProfileView } from '@/modules/user/client';
+import { getUser, ProfileTabs } from '@/modules/user/server';
 
 type Props = {
   params: Promise<{ idOrUsername: string }>;

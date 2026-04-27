@@ -2,7 +2,8 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import React from 'react';
 
-import { getMe, ProfileTabs, UserProfileView } from '@/modules/user/server';
+import { UserProfileView } from '@/modules/user/client';
+import { getMe, ProfileTabs } from '@/modules/user/server';
 
 export const metadata: Metadata = {
   title: 'My Profile',

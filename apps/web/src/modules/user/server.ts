@@ -1,4 +1,4 @@
 import 'server-only';
 
 export * from './api/server';
-export * from './components/profile';
+export * from './components/profile/ProfileTabs';

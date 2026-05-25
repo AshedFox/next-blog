@@ -2,6 +2,7 @@ import z from 'zod';
 
 import { baseCommentSchema } from '../../comment';
 import { datetimeOutSchema } from '../../common';
+import { baseTagSchema } from '../../tag';
 import { baseUserSchema } from '../../user';
 import { ArticleInclude, ArticleStatus } from '../enums';
 import { ArticleDto } from '../types';
@@ -22,6 +23,7 @@ export const baseArticleSchema = z.object({
 export const articleSchema = baseArticleSchema.extend({
   author: z.lazy(() => baseUserSchema).optional(),
   comments: z.lazy(() => z.array(baseCommentSchema)).optional(),
+  tags: z.lazy(() => z.array(baseTagSchema)).optional(),
 });
 
 export function createArticleWithRelationsSchema<

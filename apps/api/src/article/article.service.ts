@@ -137,6 +137,16 @@ export class ArticleService {
       where.push(Prisma.sql`"Article"."createdAt" <= ${filters.createdAtLte}`);
     }
 
+    if (filters.tag?.length) {
+      where.push(Prisma.sql`
+        EXISTS (
+          SELECT 1 FROM "_ArticleToTag"
+          JOIN "Tag" on "Tag".id = "_ArticleToTag"."B"
+          WHERE "_ArticleToTag"."A" = "Article".id AND "Tag".slug IN (${Prisma.join(filters.tag)})
+        )  
+      `);
+    }
+
     return where;
   }
 
@@ -155,6 +165,14 @@ export class ArticleService {
       where.createdAt = {
         gte: filters.createdAtGte,
         lte: filters.createdAtLte,
+      };
+    }
+
+    if (filters.tag?.length) {
+      where.tags = {
+        some: {
+          slug: { in: filters.tag },
+        },
       };
     }
 

@@ -16,6 +16,7 @@ import { HealthModule } from './health/health.module';
 import { ListModule } from './list/list.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
+import { TagModule } from './tag/tag.module';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -31,6 +32,7 @@ import { UserModule } from './user/user.module';
     FileModule,
     HealthModule,
     ListModule,
+    TagModule,
     PrismaModule,
     RedisModule,
     UserModule,

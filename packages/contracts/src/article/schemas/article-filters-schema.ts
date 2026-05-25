@@ -12,5 +12,7 @@ export const articleFiltersSchema = z.object({
     .catch(undefined),
   createdAtGte: datetimeInSchema.optional().catch(undefined),
   createdAtLte: datetimeInSchema.optional().catch(undefined),
-  tag: z.array(z.string()).min(1).max(5).optional(),
+  tag: createArrayFilterSchema(z.array(z.string()).min(1).max(5))
+    .optional()
+    .catch(undefined),
 });

@@ -20,7 +20,7 @@ import z from 'zod';
 import { DeletedMode, getDeletedFilter } from '@/common/soft-delete';
 import { FileService } from '@/file/file.service';
 import { PrismaService } from '@/prisma/prisma.service';
-import { StorageService } from '@/storage/storage.service';
+import { TagService } from '@/tag/tag.service';
 
 import { CreateArticleInput } from './article.types';
 import { ArticleSearchDto } from './dto/article-search.dto';
@@ -32,7 +32,7 @@ export class ArticleService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly fileService: FileService,
-    private readonly storageService: StorageService
+    private readonly tagService: TagService
   ) {}
 
   private async validateImageBlocks(blocks: CreateImageBlockDto[]) {
@@ -65,13 +65,18 @@ export class ArticleService {
     }
   }
 
-  async create(input: CreateArticleInput): Promise<Article> {
+  async create({
+    tags: tagsNames,
+    ...input
+  }: CreateArticleInput): Promise<Article> {
     await this.validateImageBlocks(
       input.blocks.filter((block) => block.type === ArticleBlockType.IMAGE)
     );
 
     const rawSlug = slugify(input.title);
     let slug = rawSlug.length > 0 ? rawSlug : 'untitled';
+
+    const tags = await this.tagService.getOrCreateMany(tagsNames);
 
     const maxAttempts = 3;
 
@@ -82,7 +87,15 @@ export class ArticleService {
         );
       }
       try {
-        return this.prisma.article.create({ data: { ...input, slug } });
+        return this.prisma.article.create({
+          data: {
+            ...input,
+            slug,
+            tags: {
+              connect: tags.map((t) => ({ id: t.id })),
+            },
+          },
+        });
       } catch (error) {
         if (
           error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -137,6 +150,16 @@ export class ArticleService {
       where.push(Prisma.sql`"Article"."createdAt" <= ${filters.createdAtLte}`);
     }
 
+    if (filters.tag?.length) {
+      where.push(Prisma.sql`
+        EXISTS (
+          SELECT 1 FROM "_ArticleToTag"
+          JOIN "Tag" on "Tag".id = "_ArticleToTag"."B"
+          WHERE "_ArticleToTag"."A" = "Article".id AND "Tag".slug IN (${Prisma.join(filters.tag)})
+        )  
+      `);
+    }
+
     return where;
   }
 
@@ -155,6 +178,14 @@ export class ArticleService {
       where.createdAt = {
         gte: filters.createdAtGte,
         lte: filters.createdAtLte,
+      };
+    }
+
+    if (filters.tag?.length) {
+      where.tags = {
+        some: {
+          slug: { in: filters.tag },
+        },
       };
     }
 
@@ -257,6 +288,19 @@ export class ArticleService {
             FROM "Comment"
             WHERE "Comment"."articleId" = "Article".id
           ) as "Comments" ON true
+        `
+      );
+    }
+    if (includeSet.has('tags')) {
+      selects.push(Prisma.sql`COALESCE("Tags".data, '[]'::json) as tags`);
+      joins.push(
+        Prisma.sql`
+          LEFT JOIN LATERAL (
+            SELECT json_agg(row_to_json("Tag".*)) as data
+            FROM "_ArticleToTag"
+            JOIN "Tag" ON "Tag".id = "_ArticleToTag"."B"
+            WHERE "_ArticleToTag"."A" = "Article".id
+          ) as "Tags" ON true
         `
       );
     }
@@ -377,7 +421,10 @@ export class ArticleService {
     return article;
   }
 
-  async update(id: string, input: UpdateArticleDto): Promise<Article> {
+  async update(
+    id: string,
+    { tags: tagsNames, ...input }: UpdateArticleDto
+  ): Promise<Article> {
     const article = await this.getOne(id);
 
     if (input.blocks) {
@@ -388,7 +435,16 @@ export class ArticleService {
 
     const updated = await this.prisma.article.update({
       where: { id },
-      data: input,
+      data: {
+        ...input,
+        tags: tagsNames
+          ? {
+              set: (await this.tagService.getOrCreateMany(tagsNames)).map(
+                (t) => ({ id: t.id })
+              ),
+            }
+          : undefined,
+      },
     });
 
     if (input.blocks) {

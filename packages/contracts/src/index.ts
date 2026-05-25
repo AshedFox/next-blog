@@ -8,4 +8,5 @@ export * from './common';
 export * from './file';
 export * from './list';
 export * from './list-item';
+export * from './tag';
 export * from './user';

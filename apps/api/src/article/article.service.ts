@@ -87,7 +87,7 @@ export class ArticleService {
         );
       }
       try {
-        return this.prisma.article.create({
+        return await this.prisma.article.create({
           data: {
             ...input,
             slug,

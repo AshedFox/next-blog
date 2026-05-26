@@ -5,20 +5,22 @@ import { searchArticles } from '@/modules/article/server';
 
 type Props = {
   userId: string;
+  isOwn?: boolean;
 };
 
-export async function ProfileArticlesTab({ userId }: Props) {
+export async function ProfileArticlesTab({ userId, isOwn = false }: Props) {
   const { data: articles, error } = await searchArticles({
     authorId: [userId],
     limit: 10,
     sort: { createdAt: 'desc' },
     include: ['tags'],
+    status: !isOwn ? ['PUBLISHED'] : undefined,
   });
 
   if (error || !articles?.data.length) {
     return (
       <div className="py-8 text-center text-muted-foreground">
-        No articles published yet.
+        {isOwn ? 'No articles' : ' No articles published yet  '}
       </div>
     );
   }

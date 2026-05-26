@@ -18,7 +18,7 @@ export default async function MyProfilePage() {
 
   return (
     <UserProfileView user={user} isOwnProfile>
-      <ProfileTabs userId={user.id} />
+      <ProfileTabs userId={user.id} isOwn />
     </UserProfileView>
   );
 }

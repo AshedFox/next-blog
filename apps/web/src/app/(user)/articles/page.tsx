@@ -48,6 +48,9 @@ const Page = ({ searchParams }: Props) => {
         searchParamsPromise={searchParams}
         basePath="/articles"
         title="Explore Articles"
+        fixedFilters={{
+          status: ['PUBLISHED'],
+        }}
         renderItem={(article) => (
           <ArticleCard key={article.id} article={article} />
         )}

@@ -1,6 +1,6 @@
 import {
   ArticleDto,
-  ArticleStatus,
+  ArticleFilters,
   PaginatedMetaOffset,
 } from '@workspace/contracts';
 import React, { ReactNode } from 'react';
@@ -13,7 +13,7 @@ import ArticleSort from './ArticleSort';
 
 type Props = {
   searchParamsPromise: Promise<Record<string, string | string[] | undefined>>;
-  statuses?: ArticleStatus[];
+  fixedFilters: Partial<ArticleFilters>;
   title: string;
   basePath: string;
   renderItem: (article: ArticleDto) => ReactNode;
@@ -21,7 +21,7 @@ type Props = {
 
 export const ArticlesCatalog = async ({
   searchParamsPromise,
-  statuses = ['PUBLISHED'],
+  fixedFilters,
   basePath,
   title,
   renderItem,
@@ -30,9 +30,9 @@ export const ArticlesCatalog = async ({
 
   const { data, error } = await searchArticles({
     ...searchParams,
+    ...fixedFilters,
     page: Number(searchParams.page ?? 1),
-    status: statuses,
-    include: ['author'],
+    include: ['author', 'tags'],
   });
 
   if (error) {

@@ -10,7 +10,7 @@ import { UserAvatar } from '@/modules/user/client';
 import { getReadingTime } from '../../server';
 
 type Props = {
-  article: ArticleWithRelationsDto<['author']>;
+  article: ArticleWithRelationsDto<['author', 'tags']>;
 };
 
 const ArticleHeader = async ({ article }: Props) => {
@@ -51,6 +51,17 @@ const ArticleHeader = async ({ article }: Props) => {
             </span>
           </div>
         </div>
+        {article.tags.length > 0 && (
+          <div className="flex gap-2 items-center flex-wrap">
+            {article.tags.map((tag) => (
+              <Link key={tag.id} href={`/tags/${tag.slug}`}>
+                <Badge variant="outline" className="border-primary/30">
+                  {tag.name}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

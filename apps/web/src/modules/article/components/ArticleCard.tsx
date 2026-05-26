@@ -1,4 +1,5 @@
 import { ArticleDto } from '@workspace/contracts';
+import { Badge } from '@workspace/ui/components/badge';
 import {
   Card,
   CardContent,
@@ -91,6 +92,18 @@ export const ArticleCard = ({ article }: Props) => {
             </span>
           </div>
         </div>
+
+        {!!article.tags?.length && (
+          <div className="flex gap-1 items-center flex-wrap">
+            {article.tags.map((tag) => (
+              <Link key={tag.id} href={`/tags/${tag.slug}`}>
+                <Badge variant="outline" size="sm">
+                  {tag.name}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        )}
       </CardFooter>
     </Card>
   );

@@ -16,6 +16,7 @@ export function mapFormValuesToContract(
 ): CreateArticleDto {
   return {
     title: values.title,
+    tags: values.tags,
     blocks: values.blocks.map((block) => {
       switch (block.type) {
         case ArticleBlockType.PARAGRAPH:

@@ -12,6 +12,7 @@ export async function ProfileArticlesTab({ userId }: Props) {
     authorId: [userId],
     limit: 10,
     sort: { createdAt: 'desc' },
+    include: ['tags'],
   });
 
   if (error || !articles?.data.length) {

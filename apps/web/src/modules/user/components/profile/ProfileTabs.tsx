@@ -12,9 +12,10 @@ import { ProfileListsTab } from './ProfileListsTab';
 
 type Props = {
   userId: string;
+  isOwn?: boolean;
 };
 
-export function ProfileTabs({ userId }: Props) {
+export function ProfileTabs({ userId, isOwn = false }: Props) {
   return (
     <Tabs
       defaultValue="articles"
@@ -27,7 +28,7 @@ export function ProfileTabs({ userId }: Props) {
       </TabsList>
 
       <TabsContent value="articles">
-        <ProfileArticlesTab userId={userId} />
+        <ProfileArticlesTab userId={userId} isOwn={isOwn} />
       </TabsContent>
       <TabsContent value="comments">
         <ProfileCommentsTab userId={userId} />

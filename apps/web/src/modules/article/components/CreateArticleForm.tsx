@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner';
 
 import { Editor } from '@/modules/editor/client';
+import { TagsSelect } from '@/modules/tag/client';
 import Spinner from '@/shared/components/Spinner';
 import { SubmitButton } from '@/shared/components/SubmitButton';
 
@@ -41,6 +42,7 @@ export const CreateArticleForm = () => {
     defaultValues: {
       title: '',
       blocks: [],
+      tags: [],
     },
   });
 
@@ -91,6 +93,24 @@ export const CreateArticleForm = () => {
                     {...field}
                     placeholder="Article title..."
                     aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="tags"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Tags</FieldLabel>
+                  <TagsSelect
+                    value={field.value ?? []}
+                    onChange={field.onChange}
+                    max={5}
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />

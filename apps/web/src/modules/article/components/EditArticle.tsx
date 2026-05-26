@@ -14,7 +14,7 @@ type Props = {
 export const EditArticle = async ({ slugOrIdPromise }: Props) => {
   const slugOrId = await slugOrIdPromise;
   const [result, currentUser] = await Promise.all([
-    getArticle(slugOrId),
+    getArticle(slugOrId, ['tags']),
     getMe(),
   ]);
 
@@ -33,6 +33,7 @@ export const EditArticle = async ({ slugOrIdPromise }: Props) => {
           }
           return block;
         }),
+        tags: result.data.tags?.map((t) => t.name) ?? [],
       }}
     />
   );

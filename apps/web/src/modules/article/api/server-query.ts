@@ -1,18 +1,17 @@
 'use cache';
 
-import { ArticleSearch, ArticleWithRelationsDto } from '@workspace/contracts';
+import { ArticleInclude, ArticleSearch } from '@workspace/contracts';
 import { cacheTag } from 'next/cache';
-
-import { ApiFetchResult } from '@/lib/api/types';
 
 import { fetchArticle, fetchArticleList } from './server-transport';
 
 export async function getArticle(
-  slugOrId: string
-): Promise<ApiFetchResult<ArticleWithRelationsDto<['author']>>> {
+  slugOrId: string,
+  include: ArticleInclude[] = ['tags', 'author']
+) {
   cacheTag(`articles-${slugOrId}`);
 
-  return fetchArticle(slugOrId, ['author']);
+  return fetchArticle(slugOrId, include);
 }
 
 export async function searchArticles(query: Partial<ArticleSearch>) {

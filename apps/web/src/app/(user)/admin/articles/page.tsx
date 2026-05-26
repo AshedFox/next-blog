@@ -19,7 +19,9 @@ const Page = async ({ searchParams }: Props) => {
     >
       <ArticlesCatalog
         searchParamsPromise={searchParams}
-        statuses={['IN_REVIEW']}
+        fixedFilters={{
+          status: ['IN_REVIEW'],
+        }}
         basePath="/admin/articles"
         title="Articles for review"
         renderItem={(article) => (

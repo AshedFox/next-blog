@@ -6,6 +6,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 
 import { ArticleModule } from './article/article.module';
 import { ArticleModerationModule } from './article-moderation/article-moderation.module';
+import { ArticleStatsModule } from './article-stats/article-stats.module';
 import { ArticleVoteModule } from './article-vote/article-vote.module';
 import { AuthModule } from './auth/auth.module';
 import { CommentModule } from './comment/comment.module';
@@ -27,6 +28,7 @@ import { UserModule } from './user/user.module';
     ArticleModule,
     ArticleModerationModule,
     ArticleVoteModule,
+    ArticleStatsModule,
     CommentModule,
     CommentVoteModule,
     FileModule,

@@ -1,5 +1,6 @@
 import z from 'zod';
 
+import { articleStatsSchema } from '../../article-stats/schemas';
 import { baseCommentSchema } from '../../comment';
 import { datetimeOutSchema } from '../../common';
 import { baseTagSchema } from '../../tag';
@@ -24,6 +25,10 @@ export const articleSchema = baseArticleSchema.extend({
   author: z.lazy(() => baseUserSchema).optional(),
   comments: z.lazy(() => z.array(baseCommentSchema)).optional(),
   tags: z.lazy(() => z.array(baseTagSchema)).optional(),
+  stats: z
+    .lazy(() => articleStatsSchema)
+    .optional()
+    .nullable(),
 });
 
 export function createArticleWithRelationsSchema<

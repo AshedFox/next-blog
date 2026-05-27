@@ -2,6 +2,7 @@ export const ArticleInclude = {
   author: 'author',
   comments: 'comments',
   tags: 'tags',
+  stats: 'stats',
 } as const;
 
 export type ArticleInclude =

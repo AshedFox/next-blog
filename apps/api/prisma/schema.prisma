@@ -93,10 +93,18 @@ model Article {
   articleModerationLogs ArticleModerationLog[]
   votes                 ArticleVote[]
   tags                  Tag[]                    @relation("ArticleToTag")
+  stats                 ArticleStats?
 
   @@index([status, createdAt])
   @@index([authorId])
   @@index([searchVector], type: Gin)
+}
+
+model ArticleStats {
+  articleId  String   @id @db.Uuid
+  viewsCount Int      @default(0)
+  updatedAt  DateTime @updatedAt
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
 }
 
 model Tag {

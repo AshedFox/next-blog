@@ -94,6 +94,9 @@ export class ArticleService {
             tags: {
               connect: tags.map((t) => ({ id: t.id })),
             },
+            stats: {
+              create: {},
+            },
           },
         });
       } catch (error) {
@@ -302,6 +305,12 @@ export class ArticleService {
             WHERE "_ArticleToTag"."A" = "Article".id
           ) as "Tags" ON true
         `
+      );
+    }
+    if (includeSet.has('stats')) {
+      selects.push(Prisma.sql`row_to_json("Stats".*) as stats`);
+      joins.push(
+        Prisma.sql`LEFT JOIN "ArticleStats" as "Stats" ON "Article".id = "Stats"."articleId"`
       );
     }
 

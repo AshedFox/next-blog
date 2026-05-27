@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Article, Prisma } from '@prisma/client';
+import { Article, ArticleStats, Prisma } from '@prisma/client';
 import {
   ArticleBlockDto,
   ArticleBlockType,
@@ -13,6 +13,7 @@ import { UserMapper, UserWithRelations } from '@/user/user.mapper';
 export type ArticleWithRelations = Article & {
   author?: UserWithRelations;
   comments?: Prisma.CommentGetPayload<Prisma.CommentDefaultArgs>[];
+  stats?: ArticleStats | null;
 };
 
 @Injectable()
@@ -52,6 +53,10 @@ export class ArticleMapper {
 
     if ('comments' in article && article.comments) {
       dto.comments = article.comments;
+    }
+
+    if ('stats' in article && article.stats) {
+      dto.stats = article.stats;
     }
 
     return dto;

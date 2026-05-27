@@ -57,7 +57,7 @@ const ContentWrapper = async ({ searchParams, params }: Props) => {
     <ArticlesCatalog
       searchParamsPromise={searchParams}
       fixedFilters={{
-        status: ['DRAFT'],
+        status: ['PUBLISHED'],
         tag: [slug],
       }}
       basePath={`/tags/${slug}`}
